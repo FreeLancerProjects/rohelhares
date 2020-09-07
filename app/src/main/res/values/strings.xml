@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">rohelhares</string>
+    <string name="map_api_key">AIzaSyAeyMUJgKAhnNXbILHONb1um72CNzELFRY</string>
+    <string name="go">Go</string>
+    <string name="returns">Return</string>
+    <string name="go_and_return">Go and return</string>
+
+</resources>
