@@ -18,10 +18,9 @@ public class Api {
 
     private static Retrofit retrofit = null;
 
-    private static Retrofit getRetrofit(String baseUrl)
-    {
+    private static Retrofit getRetrofit(String baseUrl) {
 
-        Interceptor interceptor   = new Interceptor() {
+        Interceptor interceptor = new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {
                 Request request = chain.request();
@@ -51,8 +50,8 @@ public class Api {
                 .build();
         return retrofit;
     }
-    public static Service getService(String baseUrl)
-    {
+
+    public static Service getService(String baseUrl) {
         return getRetrofit(baseUrl).create(Service.class);
     }
 }

@@ -11,8 +11,7 @@ public class PlaceDirectionModel implements Serializable {
         return routes;
     }
 
-    public class Route
-    {
+    public class Route {
         private List<Legs> legs;
         private Overview_polyline overview_polyline;
 
@@ -24,8 +23,8 @@ public class PlaceDirectionModel implements Serializable {
             return overview_polyline;
         }
     }
-    public class Legs
-    {
+
+    public class Legs {
         private Distance distance;
         private Duration duration;
         private Location start_location;
@@ -52,8 +51,8 @@ public class PlaceDirectionModel implements Serializable {
             return steps;
         }
     }
-    public class Distance
-    {
+
+    public class Distance {
         private String text;
         private long value;
 
@@ -65,8 +64,8 @@ public class PlaceDirectionModel implements Serializable {
             return value;
         }
     }
-    public class Duration
-    {
+
+    public class Duration {
         private String text;
         private long value;
 
@@ -78,16 +77,16 @@ public class PlaceDirectionModel implements Serializable {
             return value;
         }
     }
-    public class Overview_polyline
-    {
+
+    public class Overview_polyline {
         private String points;
 
         public String getPoints() {
             return points;
         }
     }
-    public class Location
-    {
+
+    public class Location {
         private double lat;
         private double lng;
 
@@ -99,16 +98,16 @@ public class PlaceDirectionModel implements Serializable {
             return lng;
         }
     }
-    public class Steps
-    {
+
+    public class Steps {
         private Polyline polyline;
 
         public Polyline getPolyline() {
             return polyline;
         }
     }
-    public class Polyline
-    {
+
+    public class Polyline {
         private String points;
 
         public String getPoints() {

@@ -1,7 +1,6 @@
 package com.rohelhares.services;
 
 
-
 import com.rohelhares.model.PlaceDirectionModel;
 
 import retrofit2.Call;
