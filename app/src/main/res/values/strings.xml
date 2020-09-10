@@ -4,5 +4,8 @@
     <string name="go">Go</string>
     <string name="returns">Return</string>
     <string name="go_and_return">Go and return</string>
+    <string name="title">Title</string>
+    <string name="content">Content</string>
+    <string name="ok">ok</string>
 
 </resources>

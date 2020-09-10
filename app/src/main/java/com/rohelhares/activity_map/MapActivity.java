@@ -4,11 +4,21 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
@@ -22,7 +32,6 @@ import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
@@ -39,6 +48,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 
@@ -51,6 +61,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.rohelhares.R;
+import com.rohelhares.databinding.DialogMessageBinding;
 import com.rohelhares.model.PlaceDirectionModel;
 import com.rohelhares.remote.Api;
 import com.rohelhares.databinding.ActivityMapBinding;
@@ -60,13 +71,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 import io.paperdb.Paper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
     private ActivityMapBinding binding;
     private String lang;
     private HashMap<Integer, List<Double>> markerlist;
@@ -76,13 +88,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private int count = 0;
     private boolean aceept = false;
     private int pos = -1;
-    private GoogleApiClient googleApiClient;
-    private LocationRequest locationRequest;
-    private LocationCallback locationCallback;
+
     private final String fineLocPerm = Manifest.permission.ACCESS_FINE_LOCATION;
     private final int loc_req = 1225;
     private double lat = 0.0, lng = 0.0;
     private List<List<Double>> lists;
+    private LocationManager locationManager;
+    private List<String> title;
+    private List<String> content;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,21 +111,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (ActivityCompat.checkSelfPermission(this, fineLocPerm) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{fineLocPerm}, loc_req);
         } else {
-
-            initGoogleApi();
+            getLocation();
         }
     }
 
-    private void initGoogleApi() {
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(LocationServices.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
-        googleApiClient.connect();
-    }
 
     private void initView() {
+        title = new ArrayList<>();
+        content = new ArrayList<>();
         lists = new ArrayList<>();
         markerlist = new HashMap<>();
         Paper.init(this);
@@ -141,6 +147,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mMap.setTrafficEnabled(true);
             mMap.setBuildingsEnabled(true);
             mMap.setIndoorEnabled(true);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            // mMap.setMyLocationEnabled(true);
             // mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), zoom));
 
             mMap.setOnMapClickListener(latLng -> {
@@ -179,6 +196,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
     private void updateDataMapUI() {
+        lists.clear();
+        mMap.clear();
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), zoom));
+        mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
         for (int key : markerlist.keySet()) {
             addMarker(markerlist.get(key));
 
@@ -188,102 +209,98 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        initLocationRequest();
-    }
-
-    private void initLocationRequest() {
-        locationRequest = LocationRequest.create();
-        locationRequest.setFastestInterval(1000);
-        locationRequest.setInterval(60000);
-        LocationSettingsRequest.Builder request = new LocationSettingsRequest.Builder();
-        request.addLocationRequest(locationRequest);
-        request.setAlwaysShow(false);
-
-
-        PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(googleApiClient, request.build());
-        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
-            @Override
-            public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
-                Status status = locationSettingsResult.getStatus();
-                switch (status.getStatusCode()) {
-                    case LocationSettingsStatusCodes.SUCCESS:
-                        startLocationUpdate();
-                        break;
-
-                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                        try {
-                            status.startResolutionForResult(MapActivity.this, 100);
-                        } catch (IntentSender.SendIntentException e) {
-                            e.printStackTrace();
-                        }
-                        break;
-
-                }
-            }
-        });
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        if (googleApiClient != null) {
-            googleApiClient.connect();
-        }
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
-
-    @SuppressLint("MissingPermission")
-    private void startLocationUpdate() {
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                onLocationChanged(locationResult.getLastLocation());
-            }
-        };
-        LocationServices.getFusedLocationProviderClient(this)
-                .requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
-    }
 
     @Override
     public void onLocationChanged(Location location) {
         lat = location.getLatitude();
         lng = location.getLongitude();
-        if(lists.size()>0){
-            for(int i=0;i<lists.size();i++){
-                List<Double> doubleList=lists.get(i);
-                for(int j=0;j<doubleList.size();j+=2){
-                    if(lat==doubleList.get(j)&&lng==doubleList.get(j+1)){
-                        Toast.makeText(MapActivity.this,"you go"+doubleList.get(j)+" "+doubleList.get(j+1),Toast.LENGTH_LONG).show();
+        updateDataMapUI();
+        if (lists.size() > 0) {
+            for (int i = 0; i < lists.size(); i++) {
+                List<Double> doubleList = lists.get(i);
+                for (int j = 0; j < doubleList.size(); j += 2) {
+
+                    if (String.format("%.5g%n", lat).equals(String.format("%.5g%n", doubleList.get(j))) && String.format("%.5g%n", lng).equals(String.format("%.5g%n", doubleList.get(j + 1)))) {
+                        String sound_Path = "android.resource://" + getPackageName() + "/" + R.raw.not;
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+                            String CHANNEL_ID = "my_channel_02";
+                            CharSequence CHANNEL_NAME = "my_channel_name";
+                            int IMPORTANCE = NotificationManager.IMPORTANCE_HIGH;
+
+                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+                            final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
+                            channel.setShowBadge(true);
+                            channel.setSound(Uri.parse(sound_Path), new AudioAttributes.Builder()
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                                    .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
+                                    .build()
+                            );
+
+                            builder.setChannelId(CHANNEL_ID);
+                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
+                            builder.setSmallIcon(R.drawable.flag_ac);
+
+
+                            builder.setContentTitle(title.get(i));
+
+
+                            builder.setContentText(content.get(i));
+
+
+                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.flag_id);
+                            builder.setLargeIcon(bitmap);
+                            manager.createNotificationChannel(channel);
+                            manager.notify(new Random().nextInt(200), builder.build());
+                        } else {
+
+                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+
+                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
+                            builder.setSmallIcon(R.drawable.flag_ac);
+
+                            builder.setContentTitle(title.get(i));
+
+
+                            builder.setContentText(content.get(i));
+
+
+                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.flag_id);
+                            builder.setLargeIcon(bitmap);
+                            manager.notify(new Random().nextInt(200), builder.build());
+
+                        }
+                    } else {
+                        Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
+
                     }
                 }
             }
         }
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), zoom));
 
-        if (googleApiClient != null) {
-            LocationServices.getFusedLocationProviderClient(this).removeLocationUpdates(locationCallback);
-            googleApiClient.disconnect();
-            googleApiClient = null;
+
+    }
+
+    void getLocation() {
+        try {
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, this);
+        } catch (SecurityException e) {
+            Log.e(":slslslsl", e.getLocalizedMessage());
         }
     }
+
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (googleApiClient != null) {
-            if (locationCallback != null) {
-                LocationServices.getFusedLocationProviderClient(this).removeLocationUpdates(locationCallback);
-                googleApiClient.disconnect();
-                googleApiClient = null;
-            }
-        }
+
     }
 
     @Override
@@ -292,7 +309,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         if (requestCode == loc_req) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                initGoogleApi();
+                getLocation();
             } else {
                 Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
             }
@@ -305,11 +322,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
 
-            startLocationUpdate();
+            getLocation();
         }
 
     }
 
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
 
     private void addMarker(List<Double> branchs) {
         Log.e("ldlld", branchs.get(0) + "");
@@ -376,10 +397,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             for (double j = from_longitude; j < to_longitude; j += .1) {
                 doubleList.add(i);
                 doubleList.add(j);
-                Log.e("lsllsl",i+" "+j);
+                Log.e("lsllsl", i + " " + j);
             }
         }
-        if(from_latitude==to_latitude&&from_longitude==to_longitude){
+        if (from_latitude == to_latitude && from_longitude == to_longitude) {
             doubleList.add(from_latitude);
             doubleList.add(from_longitude);
             doubleList.add(to_latitude);
@@ -402,6 +423,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 aceept = true;
 
                 dialog.dismiss();
+                CreateDialogMesaage(context);
             }
 
         });
@@ -412,6 +434,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 aceept = true;
 
                 dialog.dismiss();
+                CreateDialogMesaage(context);
+
             }
         });
         binding.tvgoreturn.setOnClickListener(new View.OnClickListener() {
@@ -421,6 +445,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 aceept = true;
 
                 dialog.dismiss();
+                CreateDialogMesaage(context);
 
             }
         });
@@ -428,4 +453,24 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         dialog.setView(binding.getRoot());
         dialog.show();
     }
+
+    public void CreateDialogMesaage(Context context) {
+        final AlertDialog dialog = new AlertDialog.Builder(context)
+                .create();
+
+        DialogMessageBinding binding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.dialog_message, null, false);
+
+        binding.btnEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                title.add(binding.edtName.getText().toString() + "");
+                content.add(binding.edtContent.getText().toString() + "");
+                dialog.dismiss();
+            }
+        });
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.setView(binding.getRoot());
+        dialog.show();
+    }
+
 }

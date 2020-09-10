@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+<androidx.cardview.widget.CardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="8dp"
+    android:layout_margin="8dp"
+    app:cardElevation="8dp"
+
+    >
+
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -9,9 +19,12 @@
         <TextView
             android:id="@+id/tvgo"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:layout_gravity="center_horizontal"
+            android:gravity="center_vertical"
+            android:paddingLeft="8dp"
             android:paddingTop="5dp"
+            android:paddingRight="8dp"
             android:paddingBottom="5dp"
             android:text="@string/go"
             android:textColor="@color/colorPrimary"
@@ -26,9 +39,12 @@
         <TextView
             android:id="@+id/tvreturn"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:layout_gravity="center_horizontal"
+            android:gravity="center_vertical"
+            android:paddingLeft="8dp"
             android:paddingTop="5dp"
+            android:paddingRight="8dp"
             android:paddingBottom="5dp"
             android:text="@string/returns"
             android:textColor="@color/colorPrimary"
@@ -43,9 +59,12 @@
         <TextView
             android:id="@+id/tvgoreturn"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:layout_gravity="center_horizontal"
+            android:gravity="center_vertical"
+            android:paddingLeft="8dp"
             android:paddingTop="5dp"
+            android:paddingRight="8dp"
             android:paddingBottom="5dp"
             android:text="@string/go_and_return"
             android:textColor="@color/colorPrimary"
@@ -57,4 +76,5 @@
             android:layout_height="1px"
             android:background="@color/colorPrimary" />
     </LinearLayout>
+</androidx.cardview.widget.CardView>
 </layout>
