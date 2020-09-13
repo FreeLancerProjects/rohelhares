@@ -215,16 +215,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         updateDataMapUI();
 
         if (lists.size() > 0) {
-            Toast.makeText(MapActivity.this,lists.get(0).size()+"",Toast.LENGTH_LONG).show();
+         //   Toast.makeText(MapActivity.this,lists.get(0).size()+"",Toast.LENGTH_LONG).show();
             for (int i = 0; i < lists.size(); i++) {
                 List<Double> doubleList = lists.get(i);
                 for (int j = 0; j < doubleList.size(); j += 2) {
-                    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
+               //     Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
 
                     if (String.format("%.5g%n", lat).equals(String.format("%.5g%n", doubleList.get(j))) && String.format("%.5g%n", lng).equals(String.format("%.5g%n", doubleList.get(j + 1)))) {
-                        Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
+                        //Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
                         String sound_Path = "android.resource://" + getPackageName() + "/" + R.raw.not;
-                        Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
+                    //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
 
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
@@ -261,7 +261,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             manager.notify(new Random().nextInt(200), builder.build());
                         }
                         else {
-                            Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
+                          //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
 
                             final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 
