@@ -1,76 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-<androidx.cardview.widget.CardView
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    app:cardCornerRadius="8dp"
-    android:layout_margin="8dp"
-    app:cardElevation="8dp"
 
-    >
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    >
-    <EditText
-        android:id="@+id/edtName"
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:background="@color/mdtp_white"
-        android:hint="@string/title"
-        android:paddingLeft="5dp"
-        android:paddingRight="5dp"
-        android:singleLine="true"
-        android:textColor="@color/colorPrimary"
-        android:textColorHint="@color/colorPrimary"
-        android:textSize="14sp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="8dp"
+
+        >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/edtName"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:background="@color/mdtp_white"
+                android:hint="@string/title"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:singleLine="true"
+                android:textColor="@color/colorPrimary"
+                android:textColorHint="@color/gray3"
+                android:textSize="14sp"
 
 
-        />
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:background="@color/colorPrimary"
-        />
-    <EditText
-        android:id="@+id/edtContent"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:background="@color/mdtp_white"
-        android:hint="@string/content"
-        android:paddingLeft="5dp"
-        android:paddingRight="5dp"
-        android:singleLine="true"
-        android:textColor="@color/colorPrimary"
-        android:textColorHint="@color/colorPrimary"
-        android:textSize="14sp"
+                />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="@color/colorPrimary" />
+
+            <EditText
+                android:id="@+id/edtContent"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:background="@color/mdtp_white"
+                android:hint="@string/content"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:singleLine="true"
+                android:textColor="@color/colorPrimary"
+                android:textColorHint="@color/gray3"
+                android:textSize="14sp"
 
 
-        />
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:background="@color/colorPrimary"
-        />
-    <Button
-        android:id="@+id/btnEdit"
-        android:layout_width="match_parent"
-        android:layout_height="35dp"
-        android:layout_marginLeft="100dp"
-        android:layout_marginTop="30dp"
-        android:layout_marginBottom="15dp"
-        android:layout_marginRight="100dp"
-        android:background="@color/colorPrimary"
-        android:text="@string/ok"
-        android:textColor="@color/mdtp_white"
-        android:textSize="15sp"
+                />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="@color/colorPrimary" />
+
+            <Button
+                android:id="@+id/btnEdit"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginLeft="100dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginRight="100dp"
+                android:layout_marginBottom="15dp"
+                android:background="@color/colorPrimary"
+                android:text="@string/ok"
+                android:textColor="@color/mdtp_white"
+                android:textSize="15sp"
 
 
-        />
+                />
 
-</LinearLayout>
+        </LinearLayout>
 
-</androidx.cardview.widget.CardView>
+    </androidx.cardview.widget.CardView>
 </layout>

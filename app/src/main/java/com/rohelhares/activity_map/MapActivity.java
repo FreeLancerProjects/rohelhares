@@ -51,6 +51,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
 
 
 import com.google.android.gms.maps.GoogleMap;
@@ -78,7 +79,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, LocationListener {
     private ActivityMapBinding binding;
     private String lang;
     private HashMap<Integer, List<Double>> markerlist;
@@ -93,7 +94,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private final int loc_req = 1225;
     private double lat = 0.0, lng = 0.0;
     private List<List<Double>> lists;
-    private LocationManager locationManager;
+    private GoogleApiClient googleApiClient;
+    private LocationRequest locationRequest;
+    private LocationCallback locationCallback;
+    private final String gps_perm = Manifest.permission.ACCESS_FINE_LOCATION;
+    public Location location;
     private List<String> title;
     private List<String> content;
 
@@ -105,14 +110,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         initView();
         CheckPermission();
 
-    }
-
-    private void CheckPermission() {
-        if (ActivityCompat.checkSelfPermission(this, fineLocPerm) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{fineLocPerm}, loc_req);
-        } else {
-            getLocation();
-        }
     }
 
 
@@ -196,32 +193,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
     private void updateDataMapUI() {
-        lists.clear();
-        mMap.clear();
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), zoom));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-        for (int key : markerlist.keySet()) {
-            addMarker(markerlist.get(key));
-
-
-        }
-
-
-    }
-
-
-    @Override
-    public void onLocationChanged(Location location) {
-        lat = location.getLatitude();
-        lng = location.getLongitude();
-        updateDataMapUI();
         if (lists.size() > 0) {
+
             for (int i = 0; i < lists.size(); i++) {
                 List<Double> doubleList = lists.get(i);
                 for (int j = 0; j < doubleList.size(); j += 2) {
 
                     if (String.format("%.5g%n", lat).equals(String.format("%.5g%n", doubleList.get(j))) && String.format("%.5g%n", lng).equals(String.format("%.5g%n", doubleList.get(j + 1)))) {
+                        Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
                         String sound_Path = "android.resource://" + getPackageName() + "/" + R.raw.not;
+                        Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
 
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
@@ -257,7 +238,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             manager.createNotificationChannel(channel);
                             manager.notify(new Random().nextInt(200), builder.build());
                         } else {
-
+                            Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
+q
                             final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 
                             builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
@@ -284,17 +266,37 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         }
 
+        lists.clear();
+        mMap.clear();
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), zoom));
+        mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+        for (int key : markerlist.keySet()) {
+            addMarker(markerlist.get(key));
 
-    }
 
-    void getLocation() {
-        try {
-            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, this);
-        } catch (SecurityException e) {
-            Log.e(":slslslsl", e.getLocalizedMessage());
         }
+
+
     }
+
+
+    @Override
+    public void onLocationChanged(Location location) {
+        lat = location.getLatitude();
+        lng = location.getLongitude();
+        updateDataMapUI();
+
+
+    }
+
+//    void getLocation() {
+//        try {
+//            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+//            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, this);
+//        } catch (SecurityException e) {
+//            Log.e(":slslslsl", e.getLocalizedMessage());
+//        }
+//    }
 
 
     @Override
@@ -309,28 +311,108 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         if (requestCode == loc_req) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLocation();
+                initGoogleApiClient();
             } else {
                 Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    //    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//
+//        if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
+//
+//            getLocation();
+//        }
+//
+//    }
+//
+//    @Override
+//    public void onStatusChanged(String provider, int status, Bundle extras) {
+//
+//    }
+    private void CheckPermission() {
+        if (ActivityCompat.checkSelfPermission(this, gps_perm) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{gps_perm}, loc_req);
+        } else {
 
-        if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
+            initGoogleApiClient();
 
-            getLocation();
         }
+    }
 
+    private void initGoogleApiClient() {
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .addOnConnectionFailedListener(this)
+                .addConnectionCallbacks(this)
+                .addApi(LocationServices.API)
+                .build();
+        googleApiClient.connect();
+    }
+
+
+    private void initLocationRequest() {
+        locationRequest = LocationRequest.create();
+        locationRequest.setFastestInterval(1);
+        locationRequest.setInterval(1);
+        LocationSettingsRequest.Builder request = new LocationSettingsRequest.Builder();
+        request.addLocationRequest(locationRequest);
+        request.setAlwaysShow(false);
+
+        PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(googleApiClient, request.build());
+
+        result.setResultCallback(result1 -> {
+
+            Status status = result1.getStatus();
+            switch (status.getStatusCode()) {
+                case LocationSettingsStatusCodes.SUCCESS:
+                    startLocationUpdate();
+                    break;
+                case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                    try {
+                        status.startResolutionForResult(MapActivity.this, 1255);
+                    } catch (Exception e) {
+                    }
+                    break;
+                case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                    Log.e("not available", "not available");
+                    break;
+            }
+        });
+
+    }
+
+    @SuppressLint("MissingPermission")
+    private void startLocationUpdate() {
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                onLocationChanged(locationResult.getLastLocation());
+            }
+        };
+        LocationServices.getFusedLocationProviderClient(this)
+                .requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
     }
 
     @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
+    public void onConnected(@Nullable Bundle bundle) {
+        initLocationRequest();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        if (googleApiClient != null) {
+            googleApiClient.connect();
+        }
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
+
 
     private void addMarker(List<Double> branchs) {
         Log.e("ldlld", branchs.get(0) + "");

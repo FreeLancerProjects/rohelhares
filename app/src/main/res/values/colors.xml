@@ -1,6 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#03DAC5</color>
+    <color name="colorPrimary">#00876A</color>
+    <color name="colorPrimaryDark">#00876A</color>
+    <color name="colorAccent">#FBB812</color>
+    <color name="second">#28A249</color>
+    <color name="white">#fff</color>
+    <color name="black">#000000</color>
+    <color name="gray0">#fafafa</color>
+    <color name="gray1">#f5f5f5</color>
+    <color name="gray2">#eee</color>
+    <color name="gray3">#e0e0e0</color>
+    <color name="gray4">#bababa</color>
+    <color name="gray5">#c3c3c3</color>
+    <color name="gray6">#a0a0a0</color>
+    <color name="gray7">#f8f8f8</color>
+    <color name="gray8">#6f6d6d</color>
+    <color name="gray9">#616161</color>
+    <color name="third">#fbb812</color>
+    <color name="card_bg">#f5f5f3</color>
+    <color name="text_title">#3d64af</color>
+    <color name="transparent">#00000000</color>
+    <color name="white_200">#55ffffff</color>
+    <color name="black_trans">#55000000</color>
+    <color name="second_trans">#22CD9A1F</color>
+    <color name="offer_grid_1">#a10000</color>
+    <color name="offer_grid_2">#D70000</color>
+    <color name="circle_bg">#99017B60</color>
+    <color name="red">#920a0c</color>
+    <color name="red2">#ff0000</color>
+    <color name="green">#009632</color>
+    <color name="primary_alpha">#550a4161</color>
+    <color name="color1">#eb6035</color>
+    <color name="color2">#fc4e4f</color>
+    <color name="color3">#fd7173</color>
+    <color name="color_trans_white">#55ffffff</color>
+
 </resources>
