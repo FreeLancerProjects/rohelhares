@@ -21,6 +21,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -70,7 +71,11 @@ import com.rohelhares.model.PlaceDirectionModel;
 import com.rohelhares.remote.Api;
 import com.rohelhares.databinding.ActivityMapBinding;
 import com.rohelhares.databinding.DialogCustomBinding;
+import com.rohelhares.share.Common;
+import com.squareup.picasso.Picasso;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -92,6 +97,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private int count = 0;
     private boolean aceept = false;
     private int pos = -1;
+    private final String READ_PERM = Manifest.permission.READ_EXTERNAL_STORAGE;
+    private final String write_permission = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+    private final int READ_REQ = 1;
 
     private final String fineLocPerm = Manifest.permission.ACCESS_FINE_LOCATION;
     private final int loc_req = 1225;
@@ -106,6 +114,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private List<String> content;
     public static My_Database my_database;
     private List<AddGeo> addgeo;
+    private Uri uri;
+    private List<File> files;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,10 +127,38 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
+    public void checkReadPermission() {
+        if (ActivityCompat.checkSelfPermission(this, READ_PERM) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{READ_PERM}, READ_REQ);
+        } else {
+            SelectImage(READ_REQ);
+        }
+    }
+
+    private void SelectImage(int req) {
+
+        Intent intent = new Intent();
+
+        if (req == READ_REQ) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+            } else {
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+
+            }
+
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.setType("audio/*");
+            startActivityForResult(intent, req);
+
+        }
+    }
 
     private void initView() {
         title = new ArrayList<>();
         content = new ArrayList<>();
+        files = new ArrayList<>();
         lists = new ArrayList<>();
         markerlist = new HashMap<>();
         Paper.init(this);
@@ -137,6 +175,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         for (int i = 0; i < addgeo.size(); i++) {
             content.add(addgeo.get(i).getContent());
             title.add(addgeo.get(i).getTitle());
+            File file = new File(addgeo.get(i).getSound());
+            Log.e("llll",file.getPath());
+            files.add(file);
+            files.add(file);
             ArrayList<Double> listfogeo = new ArrayList<>();
             listfogeo.add(addgeo.get(i).getFrom_lat());
             listfogeo.add(addgeo.get(i).getFrom_lng());
@@ -176,11 +218,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
             // mMap.setMyLocationEnabled(true);
             // mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), zoom));
-if(count==0){
-    if (markerlist.size() > 0) {
-        updateDataMapUI();
-    }
-}
+            if (count == 0) {
+                if (markerlist.size() > 0) {
+                    updateDataMapUI();
+                }
+            }
             mMap.setOnMapClickListener(latLng -> {
                 Log.e(";;;;", count + "");
                 if (count > 0) {
@@ -211,6 +253,8 @@ if(count==0){
                         addGeo.setFrom_lng(list1.get(1));
                         addGeo.setTo_lat(list1.get(2));
                         addGeo.setTo_lng(list1.get(3));
+                        addGeo.setSound(files.get(files.size() - 1).getPath());
+                        Log.e("lflflfl", files.get(files.size() - 1).getPath());
                         this.my_database.myDoe().add_geo(addGeo);
 
                         updateDataMapUI();
@@ -348,8 +392,31 @@ if(count==0){
             } else {
                 Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
             }
+        } else if (requestCode == READ_REQ) {
+
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                SelectImage(requestCode);
+            } else {
+                // Toast.makeText(this, getString(R.string.per), Toast.LENGTH_SHORT).show();
+            }
+
         }
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == READ_REQ && resultCode == Activity.RESULT_OK && data != null) {
+
+            uri = data.getData();
+            File file = new File(Common.getImagePath(this, uri));
+            files.add(file);
+
+
+        }
+
+    }
+
 
     //    @Override
 //    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -561,6 +628,7 @@ if(count==0){
     }
 
     public void CreateDialogAlert(Context context) {
+        checkReadPermission();
         final AlertDialog dialog = new AlertDialog.Builder(context)
                 .create();
 

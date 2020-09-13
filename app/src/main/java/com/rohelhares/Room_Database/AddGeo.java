@@ -20,6 +20,8 @@ public class AddGeo {
     private String title;
     @ColumnInfo(name = "content")
     private String content;
+    @ColumnInfo(name = "sound")
+    private String sound;
 //    @ColumnInfo(name = "sound")
 //    private byte[] image;
 
@@ -78,5 +80,13 @@ public class AddGeo {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getSound() {
+        return sound;
+    }
+
+    public void setSound(String sound) {
+        this.sound = sound;
     }
 }
