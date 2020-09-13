@@ -193,11 +193,33 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
     private void updateDataMapUI() {
-        if (lists.size() > 0) {
 
+        lists.clear();
+        mMap.clear();
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), zoom));
+        mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+        for (int key : markerlist.keySet()) {
+            addMarker(markerlist.get(key));
+
+
+        }
+
+
+    }
+
+
+    @Override
+    public void onLocationChanged(Location location) {
+        lat = location.getLatitude();
+        lng = location.getLongitude();
+        updateDataMapUI();
+
+        if (lists.size() > 0) {
+            Toast.makeText(MapActivity.this,lists.get(0).size()+"",Toast.LENGTH_LONG).show();
             for (int i = 0; i < lists.size(); i++) {
                 List<Double> doubleList = lists.get(i);
                 for (int j = 0; j < doubleList.size(); j += 2) {
+                    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
 
                     if (String.format("%.5g%n", lat).equals(String.format("%.5g%n", doubleList.get(j))) && String.format("%.5g%n", lng).equals(String.format("%.5g%n", doubleList.get(j + 1)))) {
                         Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
@@ -222,7 +244,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                             builder.setChannelId(CHANNEL_ID);
                             builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-                            builder.setSmallIcon(R.drawable.flag_ac);
+                            builder.setSmallIcon(R.drawable.ic_notification);
 
 
                             builder.setContentTitle(title.get(i));
@@ -233,17 +255,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                             NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.flag_id);
+                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
                             builder.setLargeIcon(bitmap);
                             manager.createNotificationChannel(channel);
                             manager.notify(new Random().nextInt(200), builder.build());
-                        } else {
+                        }
+                        else {
                             Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
-q
+
                             final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 
                             builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-                            builder.setSmallIcon(R.drawable.flag_ac);
+                            builder.setSmallIcon(R.drawable.ic_notification);
 
                             builder.setContentTitle(title.get(i));
 
@@ -253,39 +276,16 @@ q
 
                             NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.flag_id);
+                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
                             builder.setLargeIcon(bitmap);
                             manager.notify(new Random().nextInt(200), builder.build());
 
                         }
-                    } else {
-                        Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
-
+                        break;
                     }
                 }
             }
         }
-
-        lists.clear();
-        mMap.clear();
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), zoom));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-        for (int key : markerlist.keySet()) {
-            addMarker(markerlist.get(key));
-
-
-        }
-
-
-    }
-
-
-    @Override
-    public void onLocationChanged(Location location) {
-        lat = location.getLatitude();
-        lng = location.getLongitude();
-        updateDataMapUI();
-
 
     }
 
@@ -475,14 +475,46 @@ q
         Polyline polyline = mMap.addPolyline(polyLineOptions);
         polyline.setGeodesic(true);
         List<Double> doubleList = new ArrayList<>();
+        Log.e("lflfll",from_latitude+" "+to_latitude+" "+from_longitude+" "+to_longitude);
+        if(from_latitude<to_latitude&&from_longitude<to_longitude){
         for (double i = from_latitude; i < to_latitude; i += .1) {
             for (double j = from_longitude; j < to_longitude; j += .1) {
                 doubleList.add(i);
                 doubleList.add(j);
                 Log.e("lsllsl", i + " " + j);
             }
+        }}
+        else if(to_latitude<from_latitude&&to_longitude<from_longitude){
+            for (double i = to_latitude; i < from_latitude; i += .1) {
+                for (double j = to_longitude; j < from_longitude; j += .1) {
+                    doubleList.add(i);
+                    doubleList.add(j);
+                    Log.e("lsllsl", i + " " + j);
+                }
+            }
         }
+        else if(to_latitude<from_latitude&&from_latitude<to_latitude){
+            for (double i = to_latitude; i < from_latitude; i += .1) {
+                for (double j = from_longitude; j < to_longitude; j += .1) {
+                    doubleList.add(i);
+                    doubleList.add(j);
+                    Log.e("lsllsl", i + " " + j);
+                }
+            }
+        }
+        else {
+            for (double i = from_latitude; i < to_latitude; i += .1) {
+                for (double j = to_longitude; j < from_longitude; j += .1) {
+                    doubleList.add(i);
+                    doubleList.add(j);
+                    Log.e("lsllsl", i + " " + j);
+                }
+            }
+        }
+
         if (from_latitude == to_latitude && from_longitude == to_longitude) {
+            Log.e("lsllsl", fineLocPerm + " " + fineLocPerm);
+
             doubleList.add(from_latitude);
             doubleList.add(from_longitude);
             doubleList.add(to_latitude);
