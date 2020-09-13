@@ -52,6 +52,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
+import androidx.room.Room;
 
 
 import com.google.android.gms.maps.GoogleMap;
@@ -62,6 +63,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.rohelhares.R;
+import com.rohelhares.Room_Database.AddGeo;
+import com.rohelhares.Room_Database.My_Database;
 import com.rohelhares.databinding.DialogMessageBinding;
 import com.rohelhares.model.PlaceDirectionModel;
 import com.rohelhares.remote.Api;
@@ -101,6 +104,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public Location location;
     private List<String> title;
     private List<String> content;
+    public static My_Database my_database;
+    private List<AddGeo> addgeo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,6 +132,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 CreateDialogAlert(MapActivity.this);
             }
         });
+        my_database = Room.databaseBuilder(getApplicationContext(), My_Database.class, "geodb").allowMainThreadQueries().build();
+        addgeo = this.my_database.myDoe().getgeo();
+        for (int i = 0; i < addgeo.size(); i++) {
+            content.add(addgeo.get(i).getContent());
+            title.add(addgeo.get(i).getTitle());
+            ArrayList<Double> listfogeo = new ArrayList<>();
+            listfogeo.add(addgeo.get(i).getFrom_lat());
+            listfogeo.add(addgeo.get(i).getFrom_lng());
+            listfogeo.add(addgeo.get(i).getTo_lat());
+            listfogeo.add(addgeo.get(i).getTo_lng());
+            markerlist.put(i, listfogeo);
+
+        }
+
     }
 
     private void updateUI() {
@@ -144,6 +163,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mMap.setTrafficEnabled(true);
             mMap.setBuildingsEnabled(true);
             mMap.setIndoorEnabled(true);
+
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
@@ -156,7 +176,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
             // mMap.setMyLocationEnabled(true);
             // mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), zoom));
-
+if(count==0){
+    if (markerlist.size() > 0) {
+        updateDataMapUI();
+    }
+}
             mMap.setOnMapClickListener(latLng -> {
                 Log.e(";;;;", count + "");
                 if (count > 0) {
@@ -179,6 +203,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     if (count == 0) {
                         aceept = false;
                         pos = -1;
+                        AddGeo addGeo = new AddGeo();
+                        addGeo.setContent(content.get(content.size() - 1));
+                        addGeo.setTitle(title.get(title.size() - 1));
+                        List<Double> list1 = markerlist.get(markerlist.size() - 1);
+                        addGeo.setFrom_lat(list1.get(0));
+                        addGeo.setFrom_lng(list1.get(1));
+                        addGeo.setTo_lat(list1.get(2));
+                        addGeo.setTo_lng(list1.get(3));
+                        this.my_database.myDoe().add_geo(addGeo);
+
                         updateDataMapUI();
                     } else {
                         pos = markerlist.size() - 1;
@@ -215,16 +249,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         updateDataMapUI();
 
         if (lists.size() > 0) {
-         //   Toast.makeText(MapActivity.this,lists.get(0).size()+"",Toast.LENGTH_LONG).show();
+            //   Toast.makeText(MapActivity.this,lists.get(0).size()+"",Toast.LENGTH_LONG).show();
             for (int i = 0; i < lists.size(); i++) {
                 List<Double> doubleList = lists.get(i);
                 for (int j = 0; j < doubleList.size(); j += 2) {
-               //     Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
+                    //     Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
 
                     if (String.format("%.5g%n", lat).equals(String.format("%.5g%n", doubleList.get(j))) && String.format("%.5g%n", lng).equals(String.format("%.5g%n", doubleList.get(j + 1)))) {
                         //Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
                         String sound_Path = "android.resource://" + getPackageName() + "/" + R.raw.not;
-                    //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
+                        //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
 
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
@@ -259,9 +293,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             builder.setLargeIcon(bitmap);
                             manager.createNotificationChannel(channel);
                             manager.notify(new Random().nextInt(200), builder.build());
-                        }
-                        else {
-                          //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
+                        } else {
+                            //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
 
                             final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 
@@ -430,8 +463,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
             // getDirection(branchs.get(0) + "", branchs.get(1) + "", branchs.get(2) + "", branchs.get(3) + "");
             drawRoute(branchs.get(0), branchs.get(1), branchs.get(2), branchs.get(3));
-        }
-        catch (Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -481,16 +513,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         Polyline polyline = mMap.addPolyline(polyLineOptions);
         polyline.setGeodesic(true);
         List<Double> doubleList = new ArrayList<>();
-        Log.e("lflfll",from_latitude+" "+to_latitude+" "+from_longitude+" "+to_longitude);
-        if(from_latitude<to_latitude&&from_longitude<to_longitude){
-        for (double i = from_latitude; i < to_latitude; i += .1) {
-            for (double j = from_longitude; j < to_longitude; j += .1) {
-                doubleList.add(i);
-                doubleList.add(j);
-                Log.e("lsllsl", i + " " + j);
+        Log.e("lflfll", from_latitude + " " + to_latitude + " " + from_longitude + " " + to_longitude);
+        if (from_latitude < to_latitude && from_longitude < to_longitude) {
+            for (double i = from_latitude; i < to_latitude; i += .1) {
+                for (double j = from_longitude; j < to_longitude; j += .1) {
+                    doubleList.add(i);
+                    doubleList.add(j);
+                    Log.e("lsllsl", i + " " + j);
+                }
             }
-        }}
-        else if(to_latitude<from_latitude&&to_longitude<from_longitude){
+        } else if (to_latitude < from_latitude && to_longitude < from_longitude) {
             for (double i = to_latitude; i < from_latitude; i += .1) {
                 for (double j = to_longitude; j < from_longitude; j += .1) {
                     doubleList.add(i);
@@ -498,8 +530,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     Log.e("lsllsl", i + " " + j);
                 }
             }
-        }
-        else if(to_latitude<from_latitude&&from_latitude<to_latitude){
+        } else if (to_latitude < from_latitude && from_latitude < to_latitude) {
             for (double i = to_latitude; i < from_latitude; i += .1) {
                 for (double j = from_longitude; j < to_longitude; j += .1) {
                     doubleList.add(i);
@@ -507,8 +538,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     Log.e("lsllsl", i + " " + j);
                 }
             }
-        }
-        else {
+        } else {
             for (double i = from_latitude; i < to_latitude; i += .1) {
                 for (double j = to_longitude; j < from_longitude; j += .1) {
                     doubleList.add(i);
