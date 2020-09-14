@@ -334,8 +334,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             String sound_Path = "android.resource://" + getPackageName() + "/" + R.raw.not;
                             //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
                             for (int l = 0; l < countsnum.get(i); l++) {
-                                if(files.get(i)!=null&&files.get(i).getPath()!=null&&!files.get(i).getPath().equals(null)) {
-                                CreateDialogDisplay(this, files.get(i).getPath());}
+                                if (files.get(i) != null && files.get(i).getPath() != null && !files.get(i).getPath().equals(null)) {
+                                    CreateDialogDisplay(this, files.get(i).getPath());
+                                }
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
                                     String CHANNEL_ID = "my_channel_02";
@@ -471,7 +472,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 String sound_Path = "android.resource://" + getPackageName() + "/" + R.raw.not;
                 //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
                 for (int l = 0; l < countsnum.get(i); l++) {
-                    if(files.get(i)!=null&&files.get(i).getPath()!=null&&!files.get(i).getPath().equals(null)) {
+                    if (files.get(i) != null && files.get(i).getPath() != null && !files.get(i).getPath().equals(null)) {
 
                         CreateDialogDisplay(MapActivity.this, files.get(i).getPath());
                     }
@@ -780,7 +781,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 binding.tv2.setTextColor(getResources().getColor(R.color.second));
                 binding.tv3.setTextColor(getResources().getColor(R.color.second));
 
-             //   dialog.dismiss();
+                //   dialog.dismiss();
             }
 
         });
@@ -797,7 +798,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 binding.tv2.setTextColor(getResources().getColor(R.color.white));
                 binding.tv1.setTextColor(getResources().getColor(R.color.second));
                 binding.tv3.setTextColor(getResources().getColor(R.color.second));
-               // dialog.dismiss();
+                // dialog.dismiss();
 
             }
         });
@@ -1003,63 +1004,64 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void CreateDialogDisplay(Context context, String path) {
-        if(path!=null&&!path.equals(null)){
-        final AlertDialog dialog = new AlertDialog.Builder(context)
-                .create();
-        DialogDisplayBinding binding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.dialog_display, null, false);
-        initAudio(binding, path);
-        binding.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                if (mediaPlayer != null && b) {
+        if (path != null && !path.equals(null)) {
+            final AlertDialog dialog = new AlertDialog.Builder(context)
+                    .create();
+            DialogDisplayBinding binding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.dialog_display, null, false);
+            initAudio(binding, path);
+            binding.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                    if (mediaPlayer != null && b) {
 
 
-                    mediaPlayer.seekTo(i);
+                        mediaPlayer.seekTo(i);
 
+
+                    }
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
 
                 }
-            }
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-
-        binding.imagePlay.setOnClickListener(view -> {
-
-            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-                binding.recordDuration.setText(getDuration(mediaPlayer.getCurrentPosition()));
-                mediaPlayer.pause();
-                binding.imagePlay.setImageResource(R.drawable.ic_play);
-
-            } else {
-
-                if (mediaPlayer != null) {
-                    binding.imagePlay.setImageResource(R.drawable.ic_pause);
-
-                    mediaPlayer.start();
-                    updateProgress(binding);
-
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
 
                 }
-            }
+            });
 
-        });
-        binding.cardViewclose.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.setView(binding.getRoot());
-        dialog.show();}
+            binding.imagePlay.setOnClickListener(view -> {
+
+                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                    binding.recordDuration.setText(getDuration(mediaPlayer.getCurrentPosition()));
+                    mediaPlayer.pause();
+                    binding.imagePlay.setImageResource(R.drawable.ic_play);
+
+                } else {
+
+                    if (mediaPlayer != null) {
+                        binding.imagePlay.setImageResource(R.drawable.ic_pause);
+
+                        mediaPlayer.start();
+                        updateProgress(binding);
+
+
+                    }
+                }
+
+            });
+            binding.cardViewclose.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    dialog.dismiss();
+                }
+            });
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.setView(binding.getRoot());
+            dialog.show();
+        }
     }
 
     private void initRecorder(DialogMessageBinding binding) {
