@@ -22,6 +22,10 @@ public class AddGeo {
     private String content;
     @ColumnInfo(name = "sound")
     private String sound;
+    @ColumnInfo(name = "cout")
+    private int count;
+    @ColumnInfo(name = "time")
+    private int time;
 //    @ColumnInfo(name = "sound")
 //    private byte[] image;
 
@@ -88,5 +92,21 @@ public class AddGeo {
 
     public void setSound(String sound) {
         this.sound = sound;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public int getTime() {
+        return time;
+    }
+
+    public void setTime(int time) {
+        this.time = time;
     }
 }

@@ -17,14 +17,20 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -53,6 +59,8 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
 
@@ -66,21 +74,31 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.rohelhares.R;
 import com.rohelhares.Room_Database.AddGeo;
 import com.rohelhares.Room_Database.My_Database;
+import com.rohelhares.adapter.TimesAdapter;
+import com.rohelhares.databinding.DialogDisplayBinding;
 import com.rohelhares.databinding.DialogMessageBinding;
 import com.rohelhares.model.PlaceDirectionModel;
+import com.rohelhares.model.TimesModel;
 import com.rohelhares.remote.Api;
 import com.rohelhares.databinding.ActivityMapBinding;
 import com.rohelhares.databinding.DialogCustomBinding;
 import com.rohelhares.share.Common;
+import com.rohelhares.tags.Tags;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import io.paperdb.Paper;
 import retrofit2.Call;
@@ -98,9 +116,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private boolean aceept = false;
     private int pos = -1;
     private final String READ_PERM = Manifest.permission.READ_EXTERNAL_STORAGE;
-    private final String write_permission = Manifest.permission.WRITE_EXTERNAL_STORAGE;
     private final int READ_REQ = 1;
+    private MediaRecorder recorder;
+    private final String write_perm = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+    private final String audio_perm = Manifest.permission.RECORD_AUDIO;
+    private final int write_req = 100;
 
+    private boolean isPermissionGranted = false;
+    private MediaPlayer mediaPlayer;
+    private Handler handler;
+    private Runnable runnable;
     private final String fineLocPerm = Manifest.permission.ACCESS_FINE_LOCATION;
     private final int loc_req = 1225;
     private double lat = 0.0, lng = 0.0;
@@ -108,14 +133,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private GoogleApiClient googleApiClient;
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
-    private final String gps_perm = Manifest.permission.ACCESS_FINE_LOCATION;
     public Location location;
     private List<String> title;
+    private List<Integer> times;
+    private List<Integer> countsnum;
     private List<String> content;
     public static My_Database my_database;
     private List<AddGeo> addgeo;
     private Uri uri;
     private List<File> files;
+    private int countnum = 1;
+    private String time = "0";
+    private CountDownTimer timer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,6 +188,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void initView() {
         title = new ArrayList<>();
         content = new ArrayList<>();
+        times = new ArrayList<>();
+        countsnum = new ArrayList<>();
         files = new ArrayList<>();
         lists = new ArrayList<>();
         markerlist = new HashMap<>();
@@ -167,7 +199,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         binding.fabSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                CreateDialogAlert(MapActivity.this);
+                count = 2;
+                aceept = true;
             }
         });
         my_database = Room.databaseBuilder(getApplicationContext(), My_Database.class, "geodb").allowMainThreadQueries().build();
@@ -175,10 +208,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         for (int i = 0; i < addgeo.size(); i++) {
             content.add(addgeo.get(i).getContent());
             title.add(addgeo.get(i).getTitle());
+            times.add(addgeo.get(i).getTime());
+            countsnum.add(addgeo.get(i).getCount());
             File file = new File(addgeo.get(i).getSound());
-            Log.e("llll",file.getPath());
+            Log.e("llll", addgeo.get(i).getCount() + "" + addgeo.get(i).getTime());
             files.add(file);
-            files.add(file);
+
             ArrayList<Double> listfogeo = new ArrayList<>();
             listfogeo.add(addgeo.get(i).getFrom_lat());
             listfogeo.add(addgeo.get(i).getFrom_lng());
@@ -187,6 +222,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             markerlist.put(i, listfogeo);
 
         }
+        checkWritePermission();
 
     }
 
@@ -245,19 +281,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     if (count == 0) {
                         aceept = false;
                         pos = -1;
-                        AddGeo addGeo = new AddGeo();
-                        addGeo.setContent(content.get(content.size() - 1));
-                        addGeo.setTitle(title.get(title.size() - 1));
-                        List<Double> list1 = markerlist.get(markerlist.size() - 1);
-                        addGeo.setFrom_lat(list1.get(0));
-                        addGeo.setFrom_lng(list1.get(1));
-                        addGeo.setTo_lat(list1.get(2));
-                        addGeo.setTo_lng(list1.get(3));
-                        addGeo.setSound(files.get(files.size() - 1).getPath());
-                        Log.e("lflflfl", files.get(files.size() - 1).getPath());
-                        this.my_database.myDoe().add_geo(addGeo);
-
                         updateDataMapUI();
+
+                        CreateDialogAlert(this);
                     } else {
                         pos = markerlist.size() - 1;
                         Log.e(";lldl", pos + "");
@@ -292,7 +318,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         lng = location.getLongitude();
         updateDataMapUI();
 
-        if (lists.size() > 0) {
+        if (lists.size() > 0 && times.size() > 0 && times.size() == lists.size()) {
             //   Toast.makeText(MapActivity.this,lists.get(0).size()+"",Toast.LENGTH_LONG).show();
             for (int i = 0; i < lists.size(); i++) {
                 List<Double> doubleList = lists.get(i);
@@ -301,64 +327,72 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                     if (String.format("%.5g%n", lat).equals(String.format("%.5g%n", doubleList.get(j))) && String.format("%.5g%n", lng).equals(String.format("%.5g%n", doubleList.get(j + 1)))) {
                         //Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
-                        String sound_Path = "android.resource://" + getPackageName() + "/" + R.raw.not;
-                        //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
-
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-                            String CHANNEL_ID = "my_channel_02";
-                            CharSequence CHANNEL_NAME = "my_channel_name";
-                            int IMPORTANCE = NotificationManager.IMPORTANCE_HIGH;
-
-                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-                            final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
-                            channel.setShowBadge(true);
-                            channel.setSound(Uri.parse(sound_Path), new AudioAttributes.Builder()
-                                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
-                                    .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
-                                    .build()
-                            );
-
-                            builder.setChannelId(CHANNEL_ID);
-                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-                            builder.setSmallIcon(R.drawable.ic_notification);
-
-
-                            builder.setContentTitle(title.get(i));
-
-
-                            builder.setContentText(content.get(i));
-
-
-                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
-                            builder.setLargeIcon(bitmap);
-                            manager.createNotificationChannel(channel);
-                            manager.notify(new Random().nextInt(200), builder.build());
+                        if (times.get(i) > 0) {
+                            startTimer(times.get(i), i);
+                            break;
                         } else {
-                            //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
+                            String sound_Path = "android.resource://" + getPackageName() + "/" + R.raw.not;
+                            //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
+                            for (int l = 0; l < countsnum.get(i); l++) {
+                                if(files.get(i)!=null&&files.get(i).getPath()!=null&&!files.get(i).getPath().equals(null)) {
+                                CreateDialogDisplay(this, files.get(i).getPath());}
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
-                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+                                    String CHANNEL_ID = "my_channel_02";
+                                    CharSequence CHANNEL_NAME = "my_channel_name";
+                                    int IMPORTANCE = NotificationManager.IMPORTANCE_HIGH;
 
-                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-                            builder.setSmallIcon(R.drawable.ic_notification);
+                                    final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+                                    final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
+                                    channel.setShowBadge(true);
+                                    channel.setSound(Uri.parse(sound_Path), new AudioAttributes.Builder()
+                                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                            .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                                            .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
+                                            .build()
+                                    );
 
-                            builder.setContentTitle(title.get(i));
+                                    builder.setChannelId(CHANNEL_ID);
+                                    builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
+                                    builder.setSmallIcon(R.drawable.ic_notification);
 
 
-                            builder.setContentText(content.get(i));
+                                    builder.setContentTitle(title.get(i));
 
 
-                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                                    builder.setContentText(content.get(i));
 
-                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
-                            builder.setLargeIcon(bitmap);
-                            manager.notify(new Random().nextInt(200), builder.build());
 
+                                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+                                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
+                                    builder.setLargeIcon(bitmap);
+                                    manager.createNotificationChannel(channel);
+                                    manager.notify(new Random().nextInt(200), builder.build());
+                                } else {
+                                    //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
+
+                                    final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+
+                                    builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
+                                    builder.setSmallIcon(R.drawable.ic_notification);
+
+                                    builder.setContentTitle(title.get(i));
+
+
+                                    builder.setContentText(content.get(i));
+
+
+                                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+                                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
+                                    builder.setLargeIcon(bitmap);
+                                    manager.notify(new Random().nextInt(200), builder.build());
+
+                                }
+                                break;
+                            }
                         }
-                        break;
                     }
                 }
             }
@@ -375,11 +409,29 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 //        }
 //    }
 
+    public void back() {
+        finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        back();
+    }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
 
+        }
+
+        if (handler != null && runnable != null) {
+            handler.removeCallbacks(runnable);
+            runnable = null;
+        }
     }
 
     @Override
@@ -387,7 +439,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == loc_req) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 initGoogleApiClient();
             } else {
                 Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
@@ -400,7 +452,88 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 // Toast.makeText(this, getString(R.string.per), Toast.LENGTH_SHORT).show();
             }
 
+        } else if (requestCode == write_req && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+            isPermissionGranted = true;
         }
+    }
+
+    private void startTimer(int time, int i) {
+        timer = new CountDownTimer(time * 1000, 1000) {
+            @Override
+            public void onTick(long l) {
+                SimpleDateFormat format = new SimpleDateFormat("ss", Locale.ENGLISH);
+                String time = format.format(new Date(l));
+                //  Toast.makeText(MapActivity.this,time,Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onFinish() {
+                String sound_Path = "android.resource://" + getPackageName() + "/" + R.raw.not;
+                //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
+                for (int l = 0; l < countsnum.get(i); l++) {
+                    if(files.get(i)!=null&&files.get(i).getPath()!=null&&!files.get(i).getPath().equals(null)) {
+
+                        CreateDialogDisplay(MapActivity.this, files.get(i).getPath());
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+                        String CHANNEL_ID = "my_channel_02";
+                        CharSequence CHANNEL_NAME = "my_channel_name";
+                        int IMPORTANCE = NotificationManager.IMPORTANCE_HIGH;
+
+                        final NotificationCompat.Builder builder = new NotificationCompat.Builder(MapActivity.this);
+                        final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
+                        channel.setShowBadge(true);
+                        channel.setSound(Uri.parse(sound_Path), new AudioAttributes.Builder()
+                                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                                .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
+                                .build()
+                        );
+
+                        builder.setChannelId(CHANNEL_ID);
+                        builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
+                        builder.setSmallIcon(R.drawable.ic_notification);
+
+
+                        builder.setContentTitle(title.get(i));
+
+
+                        builder.setContentText(content.get(i));
+
+
+                        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+                        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
+                        builder.setLargeIcon(bitmap);
+                        manager.createNotificationChannel(channel);
+                        manager.notify(new Random().nextInt(200), builder.build());
+                    } else {
+                        //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
+
+                        final NotificationCompat.Builder builder = new NotificationCompat.Builder(MapActivity.this);
+
+                        builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
+                        builder.setSmallIcon(R.drawable.ic_notification);
+
+                        builder.setContentTitle(title.get(i));
+
+
+                        builder.setContentText(content.get(i));
+
+
+                        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+                        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
+                        builder.setLargeIcon(bitmap);
+                        manager.notify(new Random().nextInt(200), builder.build());
+
+                    }
+                }
+            }
+        };
+
+        timer.start();
     }
 
     @Override
@@ -425,7 +558,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 //        if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
 //
 //            getLocation();
-//        }
+//        }m
 //
 //    }
 //
@@ -434,8 +567,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 //
 //    }
     private void CheckPermission() {
-        if (ActivityCompat.checkSelfPermission(this, gps_perm) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{gps_perm}, loc_req);
+        if (ActivityCompat.checkSelfPermission(this, fineLocPerm) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{fineLocPerm}, loc_req);
         } else {
 
             initGoogleApiClient();
@@ -628,42 +761,74 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void CreateDialogAlert(Context context) {
-        checkReadPermission();
         final AlertDialog dialog = new AlertDialog.Builder(context)
                 .create();
 
         DialogCustomBinding binding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.dialog_custom, null, false);
 
-        binding.tvgo.setOnClickListener(new View.OnClickListener() {
+        binding.cardgo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                count = 2;
-                aceept = true;
+                binding.cardgo.setBackgroundColor(getResources().getColor(R.color.second));
+                binding.cardgoreturn.setBackgroundColor(getResources().getColor(R.color.white));
+                binding.cardreturn.setBackgroundColor(getResources().getColor(R.color.white));
+                binding.image1.setColorFilter(R.color.white, android.graphics.PorterDuff.Mode.MULTIPLY);
+                binding.image2.setColorFilter(R.color.second, android.graphics.PorterDuff.Mode.MULTIPLY);
+                binding.image3.setColorFilter(R.color.second, android.graphics.PorterDuff.Mode.MULTIPLY);
+                binding.image4.setColorFilter(R.color.second, android.graphics.PorterDuff.Mode.MULTIPLY);
+                binding.tv1.setTextColor(getResources().getColor(R.color.white));
+                binding.tv2.setTextColor(getResources().getColor(R.color.second));
+                binding.tv3.setTextColor(getResources().getColor(R.color.second));
 
-                dialog.dismiss();
-                CreateDialogMesaage(context);
+             //   dialog.dismiss();
             }
 
         });
-        binding.tvreturn.setOnClickListener(new View.OnClickListener() {
+        binding.cardreturn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                count = 2;
-                aceept = true;
-
-                dialog.dismiss();
-                CreateDialogMesaage(context);
+                binding.cardreturn.setBackgroundColor(getResources().getColor(R.color.second));
+                binding.cardgoreturn.setBackgroundColor(getResources().getColor(R.color.white));
+                binding.cardgo.setBackgroundColor(getResources().getColor(R.color.white));
+                binding.image2.setColorFilter(R.color.white, android.graphics.PorterDuff.Mode.MULTIPLY);
+                binding.image1.setColorFilter(R.color.second, android.graphics.PorterDuff.Mode.MULTIPLY);
+                binding.image3.setColorFilter(R.color.second, android.graphics.PorterDuff.Mode.MULTIPLY);
+                binding.image4.setColorFilter(R.color.second, android.graphics.PorterDuff.Mode.MULTIPLY);
+                binding.tv2.setTextColor(getResources().getColor(R.color.white));
+                binding.tv1.setTextColor(getResources().getColor(R.color.second));
+                binding.tv3.setTextColor(getResources().getColor(R.color.second));
+               // dialog.dismiss();
 
             }
         });
-        binding.tvgoreturn.setOnClickListener(new View.OnClickListener() {
+        binding.cardgoreturn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                count = 2;
-                aceept = true;
+                binding.cardgoreturn.setBackgroundColor(getResources().getColor(R.color.second));
+                binding.cardgo.setBackgroundColor(getResources().getColor(R.color.white));
+                binding.cardreturn.setBackgroundColor(getResources().getColor(R.color.white));
+                binding.image3.setColorFilter(R.color.white, android.graphics.PorterDuff.Mode.MULTIPLY);
+                binding.image2.setColorFilter(R.color.second, android.graphics.PorterDuff.Mode.MULTIPLY);
+                binding.image1.setColorFilter(R.color.second, android.graphics.PorterDuff.Mode.MULTIPLY);
+                binding.image4.setColorFilter(R.color.white, android.graphics.PorterDuff.Mode.MULTIPLY);
+                binding.tv3.setTextColor(getResources().getColor(R.color.white));
+                binding.tv2.setTextColor(getResources().getColor(R.color.second));
+                binding.tv1.setTextColor(getResources().getColor(R.color.second));
+                //dialog.dismiss();
 
+            }
+        });
+        binding.cardViewclose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
                 dialog.dismiss();
+            }
+        });
+        binding.btnEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
                 CreateDialogMesaage(context);
+                dialog.dismiss();
 
             }
         });
@@ -673,16 +838,162 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void CreateDialogMesaage(Context context) {
+        TimesAdapter timesAdapter;
+        List<TimesModel> timesModels = new ArrayList<>();
+        countnum = 1;
         final AlertDialog dialog = new AlertDialog.Builder(context)
                 .create();
-
         DialogMessageBinding binding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.dialog_message, null, false);
+        timesModels.add(new TimesModel("1"));
+        timesModels.add(new TimesModel("2"));
+        timesModels.add(new TimesModel("3"));
+        timesModels.add(new TimesModel("4"));
+        timesModels.add(new TimesModel("5"));
+        timesModels.add(new TimesModel("6"));
+        timesModels.add(new TimesModel("7"));
+        timesModels.add(new TimesModel("8"));
 
+        timesAdapter = new TimesAdapter(timesModels, context);
+        binding.recViewtime.setLayoutManager(new LinearLayoutManager(context, RecyclerView.HORIZONTAL, true));
+        binding.recViewtime.setAdapter(timesAdapter);
         binding.btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 title.add(binding.edtName.getText().toString() + "");
                 content.add(binding.edtContent.getText().toString() + "");
+                times.add(Integer.parseInt(time));
+                countsnum.add(countnum);
+                AddGeo addGeo = new AddGeo();
+                addGeo.setContent(content.get(content.size() - 1));
+                addGeo.setTitle(title.get(title.size() - 1));
+                List<Double> list1 = markerlist.get(markerlist.size() - 1);
+                addGeo.setFrom_lat(list1.get(0));
+                addGeo.setFrom_lng(list1.get(1));
+                addGeo.setTo_lat(list1.get(2));
+                addGeo.setTo_lng(list1.get(3));
+                if (files.size() == title.size()) {
+                    addGeo.setSound(files.get(files.size() - 1).getPath());
+                } else {
+                    addGeo.setSound(null);
+                }
+                addGeo.setCount(countnum);
+                addGeo.setTime(Integer.parseInt(time));
+                my_database.myDoe().add_geo(addGeo);
+
+                dialog.dismiss();
+            }
+        });
+        binding.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                if (mediaPlayer != null && b) {
+
+
+                    mediaPlayer.seekTo(i);
+
+
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        binding.imagePlay.setOnClickListener(view -> {
+
+            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                binding.recordDuration.setText(getDuration(mediaPlayer.getCurrentPosition()));
+                mediaPlayer.pause();
+                binding.imagePlay.setImageResource(R.drawable.ic_play);
+
+            } else {
+
+                if (mediaPlayer != null) {
+                    binding.imagePlay.setImageResource(R.drawable.ic_pause);
+
+                    mediaPlayer.start();
+                    updateProgress(binding);
+
+
+                }
+            }
+
+        });
+        binding.imgIncrease2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                countnum += 1;
+                binding.tvCounter.setText(countnum + "");
+            }
+        });
+        binding.imgDecrease2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (countnum > 1) {
+                    countnum -= 1;
+                    binding.tvCounter.setText(countnum + "");
+                }
+            }
+        });
+        binding.cardaudiorecord.setOnTouchListener((view, motionEvent) -> {
+
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                if (files.size() > title.size()) {
+                    files.remove(files.size() - 1);
+                }
+
+                if (isPermissionGranted) {
+                    if (recorder != null) {
+                        recorder.release();
+                        recorder = null;
+
+                    }
+                    initRecorder(binding);
+                } else {
+                    Toast.makeText(this, "Cannot access mic", Toast.LENGTH_SHORT).show();
+                }
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                if (isPermissionGranted) {
+
+                    try {
+                        recorder.stop();
+                        Toast.makeText(this, R.string.saved, Toast.LENGTH_SHORT).show();
+                        mediaPlayer = null;
+                        initAudio(binding);
+
+                    } catch (Exception e) {
+                    }
+
+
+                } else {
+                    Toast.makeText(this, "Cannot access mic", Toast.LENGTH_SHORT).show();
+                }
+
+
+            }
+
+
+            return true;
+        });
+        binding.cardaudioselect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (files.size() > title.size()) {
+                    files.remove(files.size() - 1);
+                }
+                checkReadPermission();
+            }
+        });
+        binding.cardViewclose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
                 dialog.dismiss();
             }
         });
@@ -691,4 +1002,248 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         dialog.show();
     }
 
+    public void CreateDialogDisplay(Context context, String path) {
+        if(path!=null&&!path.equals(null)){
+        final AlertDialog dialog = new AlertDialog.Builder(context)
+                .create();
+        DialogDisplayBinding binding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.dialog_display, null, false);
+        initAudio(binding, path);
+        binding.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                if (mediaPlayer != null && b) {
+
+
+                    mediaPlayer.seekTo(i);
+
+
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        binding.imagePlay.setOnClickListener(view -> {
+
+            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                binding.recordDuration.setText(getDuration(mediaPlayer.getCurrentPosition()));
+                mediaPlayer.pause();
+                binding.imagePlay.setImageResource(R.drawable.ic_play);
+
+            } else {
+
+                if (mediaPlayer != null) {
+                    binding.imagePlay.setImageResource(R.drawable.ic_pause);
+
+                    mediaPlayer.start();
+                    updateProgress(binding);
+
+
+                }
+            }
+
+        });
+        binding.cardViewclose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.setView(binding.getRoot());
+        dialog.show();}
+    }
+
+    private void initRecorder(DialogMessageBinding binding) {
+
+        Calendar calendar = Calendar.getInstance();
+        binding.cardViewaudio.setVisibility(View.GONE);
+        isPermissionGranted = true;
+        String audioName = "AUD" + calendar.getTimeInMillis() + ".mp3";
+
+        File folder_done = new File(Tags.local_folder_path);
+
+        if (!folder_done.exists()) {
+            folder_done.mkdir();
+        }
+
+        String path = folder_done.getAbsolutePath() + "/" + audioName;
+
+
+        recorder = new MediaRecorder();
+        File file = new File(path);
+        files.add(file);
+        Log.e(";;;;;;", files.size() + "");
+
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        recorder.setAudioChannels(1);
+        recorder.setOutputFile(path);
+        try {
+            recorder.prepare();
+            recorder.start();
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e("Failed", "Failed");
+            binding.cardViewaudio.setVisibility(View.GONE);
+
+            if (mediaPlayer != null) {
+                mediaPlayer.release();
+                mediaPlayer = null;
+            }
+
+            if (handler != null && runnable != null) {
+                handler.removeCallbacks(runnable);
+            }
+        }
+
+    }
+
+    private void initAudio(DialogMessageBinding binding) {
+        try {
+
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setDataSource(files.get(files.size() - 1).getPath());
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mediaPlayer.setVolume(100.0f, 100.0f);
+            mediaPlayer.setLooping(false);
+            mediaPlayer.prepare();
+            binding.recordDuration.setText(getDuration(mediaPlayer.getDuration()));
+            binding.cardViewaudio.setVisibility(View.VISIBLE);
+
+            mediaPlayer.setOnPreparedListener(mediaPlayer -> {
+                binding.cardViewaudio.setVisibility(View.VISIBLE);
+                binding.seekBar.setMax(mediaPlayer.getDuration());
+                binding.imagePlay.setImageResource(R.drawable.ic_play);
+            });
+
+            mediaPlayer.setOnCompletionListener(mediaPlayer -> {
+
+                binding.recordDuration.setText(getDuration(mediaPlayer.getDuration()));
+                binding.imagePlay.setImageResource(R.drawable.ic_play);
+                binding.seekBar.setProgress(0);
+                handler.removeCallbacks(runnable);
+
+            });
+
+        } catch (Exception e) {
+            Log.e("eeeex", e.getLocalizedMessage() + e.toString());
+            mediaPlayer.release();
+            mediaPlayer = null;
+            if (handler != null && runnable != null) {
+                handler.removeCallbacks(runnable);
+            }
+            binding.cardViewaudio.setVisibility(View.GONE);
+
+        }
+    }
+
+    private void updateProgress(DialogMessageBinding binding) {
+        binding.seekBar.setProgress(mediaPlayer.getCurrentPosition());
+        binding.recordDuration.setText(getDuration(mediaPlayer.getCurrentPosition()));
+        handler = new Handler();
+        runnable = () -> updateProgress(binding);
+
+        handler.postDelayed(runnable, 1000);
+
+
+    }
+
+    private void initAudio(DialogDisplayBinding binding, String path) {
+        try {
+
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setDataSource(path);
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mediaPlayer.setVolume(100.0f, 100.0f);
+            mediaPlayer.setLooping(false);
+            mediaPlayer.prepare();
+            binding.recordDuration.setText(getDuration(mediaPlayer.getDuration()));
+            binding.cardViewaudio.setVisibility(View.VISIBLE);
+
+            mediaPlayer.setOnPreparedListener(mediaPlayer -> {
+                binding.cardViewaudio.setVisibility(View.VISIBLE);
+                binding.seekBar.setMax(mediaPlayer.getDuration());
+                binding.imagePlay.setImageResource(R.drawable.ic_play);
+            });
+
+            mediaPlayer.setOnCompletionListener(mediaPlayer -> {
+
+                binding.recordDuration.setText(getDuration(mediaPlayer.getDuration()));
+                binding.imagePlay.setImageResource(R.drawable.ic_play);
+                binding.seekBar.setProgress(0);
+                handler.removeCallbacks(runnable);
+
+            });
+
+        } catch (Exception e) {
+            Log.e("eeeex", e.getLocalizedMessage() + e.toString());
+            mediaPlayer.release();
+            mediaPlayer = null;
+            if (handler != null && runnable != null) {
+                handler.removeCallbacks(runnable);
+            }
+            binding.cardViewaudio.setVisibility(View.GONE);
+
+        }
+    }
+
+    private void updateProgress(DialogDisplayBinding binding) {
+        binding.seekBar.setProgress(mediaPlayer.getCurrentPosition());
+        binding.recordDuration.setText(getDuration(mediaPlayer.getCurrentPosition()));
+        handler = new Handler();
+        runnable = () -> updateProgress(binding);
+
+        handler.postDelayed(runnable, 1000);
+
+
+    }
+
+    private void checkWritePermission() {
+
+        if (ContextCompat.checkSelfPermission(this, audio_perm) != PackageManager.PERMISSION_GRANTED) {
+
+
+            isPermissionGranted = false;
+
+            ActivityCompat.requestPermissions(this, new String[]{write_perm, audio_perm}, write_req);
+
+
+        } else {
+            isPermissionGranted = true;
+        }
+    }
+
+    private String getDuration(long duration) {
+
+        String total_duration = "00:00";
+
+        if (mediaPlayer != null) {
+            total_duration = String.format(Locale.ENGLISH, "%02d:%02d",
+                    TimeUnit.MILLISECONDS.toMinutes(duration),
+                    TimeUnit.MILLISECONDS.toSeconds(duration) -
+                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
+            );
+
+
+        }
+
+        return total_duration;
+
+    }
+
+    public void settime(String title) {
+        time = title;
+    }
 }

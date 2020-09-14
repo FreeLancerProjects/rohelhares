@@ -1,11 +1,19 @@
 <resources>
-    <string name="app_name">روح الحارس</string>
+    <string name="app_name">Roh Elhares</string>
     <string name="map_api_key">AIzaSyDa7vtwUx4fiAqhKntADNhywJyfbx118OI</string>
-    <string name="go">ذهاب</string>
-    <string name="returns">عودة</string>
-    <string name="go_and_return">ذهاب وعودة</string>
-    <string name="title">عنوان</string>
-    <string name="content">محتوي</string>
-    <string name="ok">موافق</string>
+    <string name="go">Go Only</string>
+    <string name="returns">Return Only</string>
+    <string name="go_and_return">Go and Return</string>
+    <string name="title">Title</string>
+    <string name="content">Content</string>
+    <string name="ok">Ok</string>
+    <string name="detials">Detials</string>
+    <string name="audio_recording">Audio recording</string>
+    <string name="select_audio_file">ٍSelect Audio File</string>
+    <string name="saved">Saved</string>
+    <string name="the_number_of_impressions">The number of impressions</string>
+    <string name="the_period_of_delay">The period of delay</string>
+    <string name="second">"with second"</string>
+    <string name="next">Next</string>
 
 </resources>
