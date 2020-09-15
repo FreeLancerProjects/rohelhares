@@ -15,5 +15,7 @@
     <string name="the_period_of_delay">The period of delay</string>
     <string name="second">"with second"</string>
     <string name="next">Next</string>
+    <string name="show">show</string>
+    <string name="hidden">Hidden</string>
 
 </resources>

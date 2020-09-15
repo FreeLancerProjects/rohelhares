@@ -30,6 +30,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
@@ -136,6 +137,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public Location location;
     private List<String> title;
     private List<Integer> times;
+    private List<Integer> hiddens;
+
     private List<Integer> countsnum;
     private List<String> content;
     public static My_Database my_database;
@@ -145,6 +148,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private int countnum = 1;
     private String time = "0";
     private CountDownTimer timer;
+    private int hidden;
 
 
     @Override
@@ -190,6 +194,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         content = new ArrayList<>();
         times = new ArrayList<>();
         countsnum = new ArrayList<>();
+        hiddens = new ArrayList<>();
         files = new ArrayList<>();
         lists = new ArrayList<>();
         markerlist = new HashMap<>();
@@ -209,6 +214,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             content.add(addgeo.get(i).getContent());
             title.add(addgeo.get(i).getTitle());
             times.add(addgeo.get(i).getTime());
+            hiddens.add(addgeo.get(i).getShow());
             countsnum.add(addgeo.get(i).getCount());
             File file = new File(addgeo.get(i).getSound());
             Log.e("llll", addgeo.get(i).getCount() + "" + addgeo.get(i).getTime());
@@ -303,7 +309,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), zoom));
         mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
         for (int key : markerlist.keySet()) {
-            addMarker(markerlist.get(key));
+            if (hiddens.size() == 0||hiddens.size()<markerlist.size()) {
+                addMarker(markerlist.get(key), 0);
+            } else {
+                addMarker(markerlist.get(key), hiddens.get(key));
+
+            }
 
 
         }
@@ -335,61 +346,63 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
                             for (int l = 0; l < countsnum.get(i); l++) {
                                 if (files.get(i) != null && files.get(i).getPath() != null && !files.get(i).getPath().equals(null)) {
-                                    CreateDialogDisplay(this, files.get(i).getPath());
+                                    initAudio(files.get(i).getPath());
                                 }
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                if (!title.get(i).equals(null) && title.get(i) != null && !title.get(i).isEmpty()) {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
-                                    String CHANNEL_ID = "my_channel_02";
-                                    CharSequence CHANNEL_NAME = "my_channel_name";
-                                    int IMPORTANCE = NotificationManager.IMPORTANCE_HIGH;
+                                        String CHANNEL_ID = "my_channel_02";
+                                        CharSequence CHANNEL_NAME = "my_channel_name";
+                                        int IMPORTANCE = NotificationManager.IMPORTANCE_HIGH;
 
-                                    final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-                                    final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
-                                    channel.setShowBadge(true);
-                                    channel.setSound(Uri.parse(sound_Path), new AudioAttributes.Builder()
-                                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                                            .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
-                                            .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
-                                            .build()
-                                    );
+                                        final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+                                        final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
+                                        channel.setShowBadge(true);
+                                        channel.setSound(Uri.parse(sound_Path), new AudioAttributes.Builder()
+                                                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                                .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                                                .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
+                                                .build()
+                                        );
 
-                                    builder.setChannelId(CHANNEL_ID);
-                                    builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-                                    builder.setSmallIcon(R.drawable.ic_notification);
-
-
-                                    builder.setContentTitle(title.get(i));
+                                        builder.setChannelId(CHANNEL_ID);
+                                        builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
+                                        builder.setSmallIcon(R.drawable.ic_notification);
 
 
-                                    builder.setContentText(content.get(i));
+                                        builder.setContentTitle(title.get(i));
 
 
-                                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-                                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
-                                    builder.setLargeIcon(bitmap);
-                                    manager.createNotificationChannel(channel);
-                                    manager.notify(new Random().nextInt(200), builder.build());
-                                } else {
-                                    //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
-
-                                    final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-
-                                    builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-                                    builder.setSmallIcon(R.drawable.ic_notification);
-
-                                    builder.setContentTitle(title.get(i));
+                                        builder.setContentText(content.get(i));
 
 
-                                    builder.setContentText(content.get(i));
+                                        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+                                        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
+                                        builder.setLargeIcon(bitmap);
+                                        manager.createNotificationChannel(channel);
+                                        manager.notify(new Random().nextInt(200), builder.build());
+                                    } else {
+                                        //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
+
+                                        final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+
+                                        builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
+                                        builder.setSmallIcon(R.drawable.ic_notification);
+
+                                        builder.setContentTitle(title.get(i));
 
 
-                                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                                        builder.setContentText(content.get(i));
 
-                                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
-                                    builder.setLargeIcon(bitmap);
-                                    manager.notify(new Random().nextInt(200), builder.build());
 
+                                        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+                                        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
+                                        builder.setLargeIcon(bitmap);
+                                        manager.notify(new Random().nextInt(200), builder.build());
+
+                                    }
                                 }
                                 break;
                             }
@@ -473,62 +486,64 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
                 for (int l = 0; l < countsnum.get(i); l++) {
                     if (files.get(i) != null && files.get(i).getPath() != null && !files.get(i).getPath().equals(null)) {
-
-                        CreateDialogDisplay(MapActivity.this, files.get(i).getPath());
+                        initAudio(files.get(i).getPath());
+                        //  CreateDialogDisplay(MapActivity.this, files.get(i).getPath());
                     }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    if (!title.get(i).equals(null) && title.get(i) != null && !title.get(i).isEmpty()) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
-                        String CHANNEL_ID = "my_channel_02";
-                        CharSequence CHANNEL_NAME = "my_channel_name";
-                        int IMPORTANCE = NotificationManager.IMPORTANCE_HIGH;
+                            String CHANNEL_ID = "my_channel_02";
+                            CharSequence CHANNEL_NAME = "my_channel_name";
+                            int IMPORTANCE = NotificationManager.IMPORTANCE_HIGH;
 
-                        final NotificationCompat.Builder builder = new NotificationCompat.Builder(MapActivity.this);
-                        final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
-                        channel.setShowBadge(true);
-                        channel.setSound(Uri.parse(sound_Path), new AudioAttributes.Builder()
-                                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                                .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
-                                .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
-                                .build()
-                        );
+                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(MapActivity.this);
+                            final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
+                            channel.setShowBadge(true);
+                            channel.setSound(Uri.parse(sound_Path), new AudioAttributes.Builder()
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                                    .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
+                                    .build()
+                            );
 
-                        builder.setChannelId(CHANNEL_ID);
-                        builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-                        builder.setSmallIcon(R.drawable.ic_notification);
-
-
-                        builder.setContentTitle(title.get(i));
+                            builder.setChannelId(CHANNEL_ID);
+                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
+                            builder.setSmallIcon(R.drawable.ic_notification);
 
 
-                        builder.setContentText(content.get(i));
+                            builder.setContentTitle(title.get(i));
 
 
-                        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-                        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
-                        builder.setLargeIcon(bitmap);
-                        manager.createNotificationChannel(channel);
-                        manager.notify(new Random().nextInt(200), builder.build());
-                    } else {
-                        //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
-
-                        final NotificationCompat.Builder builder = new NotificationCompat.Builder(MapActivity.this);
-
-                        builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-                        builder.setSmallIcon(R.drawable.ic_notification);
-
-                        builder.setContentTitle(title.get(i));
+                            builder.setContentText(content.get(i));
 
 
-                        builder.setContentText(content.get(i));
+                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
+                            builder.setLargeIcon(bitmap);
+                            manager.createNotificationChannel(channel);
+                            manager.notify(new Random().nextInt(200), builder.build());
+                        } else {
+                            //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
+
+                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(MapActivity.this);
+
+                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
+                            builder.setSmallIcon(R.drawable.ic_notification);
+
+                            builder.setContentTitle(title.get(i));
 
 
-                        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                            builder.setContentText(content.get(i));
 
-                        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
-                        builder.setLargeIcon(bitmap);
-                        manager.notify(new Random().nextInt(200), builder.build());
 
+                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
+                            builder.setLargeIcon(bitmap);
+                            manager.notify(new Random().nextInt(200), builder.build());
+
+                        }
                     }
                 }
             }
@@ -648,7 +663,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
 
-    private void addMarker(List<Double> branchs) {
+    private void addMarker(List<Double> branchs, int hidden) {
         Log.e("ldlld", branchs.get(0) + "");
         IconGenerator iconGenerator = new IconGenerator(this);
         iconGenerator.setContentPadding(15, 15, 15, 15);
@@ -663,7 +678,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             marker1 = mMap.addMarker(new MarkerOptions().position(new LatLng(branchs.get(2), branchs.get(3))).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
 
             // getDirection(branchs.get(0) + "", branchs.get(1) + "", branchs.get(2) + "", branchs.get(3) + "");
-            drawRoute(branchs.get(0), branchs.get(1), branchs.get(2), branchs.get(3));
+            drawRoute(branchs.get(0), branchs.get(1), branchs.get(2), branchs.get(3), hidden);
         } catch (Exception e) {
 
         }
@@ -702,17 +717,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
-    private void drawRoute(double from_latitude, double from_longitude, double to_latitude, double to_longitude) {
-        ArrayList<LatLng> points = new ArrayList<LatLng>();
-        PolylineOptions polyLineOptions = new PolylineOptions();
-        points.add(new LatLng(from_latitude, from_longitude));
-        points.add(new LatLng(to_latitude, to_longitude));
-        polyLineOptions.width(7 * 1);
-        polyLineOptions.geodesic(true);
-        polyLineOptions.color(this.getResources().getColor(R.color.colorPrimary));
-        polyLineOptions.addAll(points);
-        Polyline polyline = mMap.addPolyline(polyLineOptions);
-        polyline.setGeodesic(true);
+    private void drawRoute(double from_latitude, double from_longitude, double to_latitude, double to_longitude, int hidden) {
+        if (hidden == 0) {
+            ArrayList<LatLng> points = new ArrayList<LatLng>();
+            PolylineOptions polyLineOptions = new PolylineOptions();
+            points.add(new LatLng(from_latitude, from_longitude));
+            points.add(new LatLng(to_latitude, to_longitude));
+            polyLineOptions.width(7 * 1);
+            polyLineOptions.geodesic(true);
+            polyLineOptions.color(this.getResources().getColor(R.color.colorPrimary));
+            polyLineOptions.addAll(points);
+            Polyline polyline = mMap.addPolyline(polyLineOptions);
+            polyline.setGeodesic(true);
+        }
         List<Double> doubleList = new ArrayList<>();
         Log.e("lflfll", from_latitude + " " + to_latitude + " " + from_longitude + " " + to_longitude);
         if (from_latitude < to_latitude && from_longitude < to_longitude) {
@@ -842,6 +859,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         TimesAdapter timesAdapter;
         List<TimesModel> timesModels = new ArrayList<>();
         countnum = 1;
+        hidden = 0;
         final AlertDialog dialog = new AlertDialog.Builder(context)
                 .create();
         DialogMessageBinding binding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.dialog_message, null, false);
@@ -857,12 +875,29 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         timesAdapter = new TimesAdapter(timesModels, context);
         binding.recViewtime.setLayoutManager(new LinearLayoutManager(context, RecyclerView.HORIZONTAL, true));
         binding.recViewtime.setAdapter(timesAdapter);
+        binding.rdshow.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    hidden = 0;
+                }
+            }
+        });
+        binding.rdhiddeen.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    hidden = 1;
+                }
+            }
+        });
         binding.btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 title.add(binding.edtName.getText().toString() + "");
                 content.add(binding.edtContent.getText().toString() + "");
+                hiddens.add(hidden);
                 times.add(Integer.parseInt(time));
                 countsnum.add(countnum);
                 AddGeo addGeo = new AddGeo();
@@ -873,6 +908,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 addGeo.setFrom_lng(list1.get(1));
                 addGeo.setTo_lat(list1.get(2));
                 addGeo.setTo_lng(list1.get(3));
+                addGeo.setShow(hidden);
                 if (files.size() == title.size()) {
                     addGeo.setSound(files.get(files.size() - 1).getPath());
                 } else {
@@ -881,7 +917,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 addGeo.setCount(countnum);
                 addGeo.setTime(Integer.parseInt(time));
                 my_database.myDoe().add_geo(addGeo);
-
+                updateDataMapUI();
                 dialog.dismiss();
             }
         });
@@ -1008,7 +1044,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             final AlertDialog dialog = new AlertDialog.Builder(context)
                     .create();
             DialogDisplayBinding binding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.dialog_display, null, false);
-            initAudio(binding, path);
+            initAudio(path);
             binding.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -1162,32 +1198,52 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
-    private void initAudio(DialogDisplayBinding binding, String path) {
+    private void initAudio(String path) {
         try {
-
+            if (mediaPlayer != null) {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.stop();
+                }
+            }
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setDataSource(path);
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mediaPlayer.setVolume(100.0f, 100.0f);
             mediaPlayer.setLooping(false);
             mediaPlayer.prepare();
-            binding.recordDuration.setText(getDuration(mediaPlayer.getDuration()));
-            binding.cardViewaudio.setVisibility(View.VISIBLE);
+            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                // binding.recordDuration.setText(getDuration(mediaPlayer.getCurrentPosition()));
+                mediaPlayer.pause();
+                ///binding.imagePlay.setImageResource(R.drawable.ic_play);
 
-            mediaPlayer.setOnPreparedListener(mediaPlayer -> {
-                binding.cardViewaudio.setVisibility(View.VISIBLE);
-                binding.seekBar.setMax(mediaPlayer.getDuration());
-                binding.imagePlay.setImageResource(R.drawable.ic_play);
-            });
+            } else {
 
-            mediaPlayer.setOnCompletionListener(mediaPlayer -> {
+                if (mediaPlayer != null) {
+                    // binding.imagePlay.setImageResource(R.drawable.ic_pause);
 
-                binding.recordDuration.setText(getDuration(mediaPlayer.getDuration()));
-                binding.imagePlay.setImageResource(R.drawable.ic_play);
-                binding.seekBar.setProgress(0);
-                handler.removeCallbacks(runnable);
+                    mediaPlayer.start();
+                    //updateProgress(binding);
 
-            });
+
+                }
+            }
+//            binding.recordDuration.setText(getDuration(mediaPlayer.getDuration()));
+//            binding.cardViewaudio.setVisibility(View.VISIBLE);
+
+//            mediaPlayer.setOnPreparedListener(mediaPlayer -> {
+//                binding.cardViewaudio.setVisibility(View.VISIBLE);
+//                binding.seekBar.setMax(mediaPlayer.getDuration());
+//                binding.imagePlay.setImageResource(R.drawable.ic_play);
+//            });
+
+//            mediaPlayer.setOnCompletionListener(mediaPlayer -> {
+//
+//                binding.recordDuration.setText(getDuration(mediaPlayer.getDuration()));
+//                binding.imagePlay.setImageResource(R.drawable.ic_play);
+//                binding.seekBar.setProgress(0);
+//                handler.removeCallbacks(runnable);
+//
+//            });
 
         } catch (Exception e) {
             Log.e("eeeex", e.getLocalizedMessage() + e.toString());
@@ -1196,7 +1252,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if (handler != null && runnable != null) {
                 handler.removeCallbacks(runnable);
             }
-            binding.cardViewaudio.setVisibility(View.GONE);
+            //    binding.cardViewaudio.setVisibility(View.GONE);
 
         }
     }

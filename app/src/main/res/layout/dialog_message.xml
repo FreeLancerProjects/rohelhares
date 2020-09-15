@@ -225,8 +225,7 @@
                         android:layout_marginStart="10dp"
                         android:layout_marginEnd="10dp"
                         android:layout_weight="1"
-                        android:progressBackgroundTint="@color/white"
-                        />
+                        android:progressBackgroundTint="@color/white" />
 
                     <TextView
                         android:id="@+id/recordDuration"
@@ -248,7 +247,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp">
+                android:layout_marginEnd="8dp"
+                android:visibility="gone">
 
                 <ImageView
                     android:id="@+id/imageeye"
@@ -365,11 +365,34 @@
                 android:id="@+id/recViewtime"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:background="@drawable/small_rounded_btn_gray">
 
             </androidx.recyclerview.widget.RecyclerView>
+
+            <RadioGroup
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rdshow"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="@string/show"
+                    android:checked="true"
+                    android:textSize="14sp" />
+
+                <RadioButton
+                    android:id="@+id/rdhiddeen"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="@string/hidden"
+                    android:textSize="14sp" />
+            </RadioGroup>
 
             <Button
                 android:id="@+id/btnEdit"

@@ -26,6 +26,8 @@ public class AddGeo {
     private int count;
     @ColumnInfo(name = "time")
     private int time;
+    @ColumnInfo(name = "show")
+    private int show;
 //    @ColumnInfo(name = "sound")
 //    private byte[] image;
 
@@ -108,5 +110,13 @@ public class AddGeo {
 
     public void setTime(int time) {
         this.time = time;
+    }
+
+    public int getShow() {
+        return show;
+    }
+
+    public void setShow(int show) {
+        this.show = show;
     }
 }
