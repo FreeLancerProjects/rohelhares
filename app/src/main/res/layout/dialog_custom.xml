@@ -211,11 +211,11 @@
                         android:id="@+id/tv3"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center"
                         android:layout_marginStart="5dp"
                         android:layout_marginEnd="5dp"
                         android:clickable="false"
                         android:longClickable="false"
-                        android:layout_gravity="center"
                         android:text="@string/select_audio_file"
                         android:textColor="@color/gray6"
                         android:textSize="13sp" />
