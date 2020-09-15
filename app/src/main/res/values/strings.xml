@@ -17,5 +17,8 @@
     <string name="next">Next</string>
     <string name="show">show</string>
     <string name="hidden">Hidden</string>
+    <string name="open">Open</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
 
 </resources>

@@ -381,8 +381,8 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:text="@string/show"
                     android:checked="true"
+                    android:text="@string/show"
                     android:textSize="14sp" />
 
                 <RadioButton
@@ -393,6 +393,59 @@
                     android:text="@string/hidden"
                     android:textSize="14sp" />
             </RadioGroup>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
+                android:text="@string/open"
+                android:textColor="@color/gray8"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:text="@string/from"
+                    android:textColor="@color/gray8"
+                    android:textSize="13sp" />
+
+                <TimePicker
+                    android:id="@+id/calenderfrom"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:timePickerMode="spinner"
+                    android:layout_weight="1"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:text="@string/to"
+                    android:textColor="@color/gray8"
+                    android:textSize="13sp"
+
+
+                    />
+
+                <TimePicker
+                    android:id="@+id/calenderto"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:timePickerMode="spinner"
+                    android:layout_weight="1"
+
+                    />
+            </LinearLayout>
 
             <Button
                 android:id="@+id/btnEdit"
