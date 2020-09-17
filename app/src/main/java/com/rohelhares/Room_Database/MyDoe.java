@@ -14,6 +14,8 @@ public interface MyDoe {
     @Query("select * from Geo")
      List<AddGeo> getgeo();
 
+    @Query("delete from Geo")
+    void deleteallorder();
 
 
 }

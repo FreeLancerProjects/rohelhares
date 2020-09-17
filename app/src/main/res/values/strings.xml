@@ -20,5 +20,7 @@
     <string name="open">Open</string>
     <string name="from">From</string>
     <string name="to">To</string>
+    <string name="timer_show">Timer Show</string>
+    <string name="timer_hidden">Timer Hidden</string>
 
 </resources>

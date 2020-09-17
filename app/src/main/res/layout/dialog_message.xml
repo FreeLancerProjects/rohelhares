@@ -276,7 +276,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <LinearLayout
-                    android:id="@+id/llll"
+                    android:id="@+id/llhour"
                     android:layout_width="wrap_content"
                     android:layout_height="45dp"
                     android:layout_margin="5dp"
@@ -321,7 +321,31 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <RadioGroup
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rdseconed"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:checked="true"
+                    android:text="@string/the_period_of_delay"
+                    android:textSize="14sp" />
+
+                <RadioButton
+                    android:id="@+id/rdhour"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="@string/open"
+                    android:textSize="14sp" />
+            </RadioGroup>
+
             <LinearLayout
+                android:id="@+id/llseconed"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -347,6 +371,7 @@
                     android:textColor="@color/gray8"
                     android:textSize="13sp" />
 
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -361,15 +386,90 @@
 
             </LinearLayout>
 
+            <EditText
+                android:id="@+id/edtnum"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginRight="8dp"
+                android:background="@drawable/small_rounded_edit_shape"
+                android:hint="@string/second"
+                android:inputType="number"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:singleLine="true"
+                android:textColor="@color/colorPrimary"
+                android:textColorHint="@color/gray3"
+                android:textSize="14sp" />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recViewtime"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
-                android:background="@drawable/small_rounded_btn_gray">
+                android:background="@drawable/small_rounded_btn_gray"
+                android:visibility="gone">
 
             </androidx.recyclerview.widget.RecyclerView>
+
+
+            <TextView
+                android:id="@+id/tv4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
+                android:text="@string/open"
+                android:textColor="@color/gray8"
+                android:textSize="13sp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/llll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:text="@string/from"
+                    android:textColor="@color/gray8"
+                    android:textSize="13sp" />
+
+                <TimePicker
+                    android:id="@+id/calenderfrom"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:timePickerMode="spinner" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:text="@string/to"
+                    android:textColor="@color/gray8"
+                    android:textSize="13sp"
+
+
+                    />
+
+                <TimePicker
+                    android:id="@+id/calenderto"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:timePickerMode="spinner"
+
+                    />
+            </LinearLayout>
 
             <RadioGroup
                 android:layout_width="match_parent"
@@ -394,58 +494,28 @@
                     android:textSize="14sp" />
             </RadioGroup>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:text="@string/open"
-                android:textColor="@color/gray8"
-                android:textSize="13sp" />
-
-            <LinearLayout
+            <RadioGroup
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:gravity="center_vertical"
-                    android:text="@string/from"
-                    android:textColor="@color/gray8"
-                    android:textSize="13sp" />
-
-                <TimePicker
-                    android:id="@+id/calenderfrom"
+                <RadioButton
+                    android:id="@+id/rdtshow"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:timePickerMode="spinner"
                     android:layout_weight="1"
-                    />
+                    android:checked="true"
+                    android:text="@string/timer_show"
+                    android:textSize="14sp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:gravity="center_vertical"
-                    android:text="@string/to"
-                    android:textColor="@color/gray8"
-                    android:textSize="13sp"
-
-
-                    />
-
-                <TimePicker
-                    android:id="@+id/calenderto"
+                <RadioButton
+                    android:id="@+id/rdthiddeen"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:timePickerMode="spinner"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
-
-                    />
-            </LinearLayout>
+                    android:text="@string/timer_hidden"
+                    android:textSize="14sp" />
+            </RadioGroup>
 
             <Button
                 android:id="@+id/btnEdit"

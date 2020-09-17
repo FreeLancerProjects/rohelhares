@@ -32,6 +32,12 @@ public class AddGeo {
     private String from;
     @ColumnInfo(name = "to")
     private String to;
+    @ColumnInfo(name = "open")
+    private int open;
+    @ColumnInfo(name = "go")
+    private String go;
+    @ColumnInfo(name = "hidden")
+    private int hidden;
 //    @ColumnInfo(name = "sound")
 //    private byte[] image;
 
@@ -138,5 +144,29 @@ public class AddGeo {
 
     public void setTo(String to) {
         this.to = to;
+    }
+
+    public int getOpen() {
+        return open;
+    }
+
+    public void setOpen(int open) {
+        this.open = open;
+    }
+
+    public String getGo() {
+        return go;
+    }
+
+    public void setGo(String go) {
+        this.go = go;
+    }
+
+    public int getHidden() {
+        return hidden;
+    }
+
+    public void setHidden(int hidden) {
+        this.hidden = hidden;
     }
 }
