@@ -48,6 +48,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -127,7 +128,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private final String write_perm = Manifest.permission.WRITE_EXTERNAL_STORAGE;
     private final String audio_perm = Manifest.permission.RECORD_AUDIO;
     private final int write_req = 100;
-
     private boolean isPermissionGranted = false;
     private MediaPlayer mediaPlayer;
     private Handler handler;
@@ -144,7 +144,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private List<Integer> times;
     private List<Integer> hiddens;
     private List<Integer> hiddenstimer;
-
     private List<Integer> opens;
 
     private List<Integer> countsnum;
@@ -166,6 +165,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private int hidden2;
     private List<List<LatLng>> allPolygon;
     private List<LatLng> polygonList;
+    private boolean canDraw = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -229,6 +229,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onClick(View view) {
                 count = 4;
                 aceept = true;
+                canDraw = true;
             }
         });
         binding.fabclear.setOnClickListener(new View.OnClickListener() {
@@ -254,6 +255,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 markerlist.clear();
                 my_database.myDoe().deleteallorder();
                 //updateDataMapUI();
+                allPolygon.clear();
+                mMap.clear();
+                marker = null;
+                addMarker(new LatLng(lat,lng));
             }
         });
         my_database = Room.databaseBuilder(getApplicationContext(), My_Database.class, "geodb").allowMainThreadQueries().build();
@@ -325,18 +330,22 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 //                }
 //            }
             mMap.setOnMapClickListener(latLng -> {
-                if(count>0){
-                if (polygonList.size() >= 4) {
-                    allPolygon.add(polygonList);
-                    polygonList = new ArrayList<>();
-                }
-                polygonList.add(latLng);
-                mMap.addMarker(new MarkerOptions().position(latLng).title(""));
+                if (canDraw){
+                    if (polygonList.size() >= 4) {
+                        allPolygon.add(polygonList);
+                        polygonList = new ArrayList<>();
+                    }
+                    polygonList.add(latLng);
+                    mMap.addMarker(new MarkerOptions().position(latLng).title(""));
 
-                if (polygonList.size()==4){
-                    drawPolygon();
-                    CreateDialogAlert(this);
-                }}
+                    if (polygonList.size()==4){
+                        drawPolygon();
+                        CreateDialogAlert(this);
+                        canDraw = false;
+
+                    }}
+
+
 /*
                 Log.e(";;;;", count + "");
                 if (count > 0) {
@@ -384,44 +393,28 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-
-    private void updateDataMapUI() {
-
-        lists.clear();
-        mMap.clear();
-        if (zoom > 0) {
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), zoom));
+    private void  addMarker(LatLng latLng){
+        if (marker==null){
+            marker = mMap.addMarker(new MarkerOptions().position(latLng));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,16.5f));
+        }else {
+            marker.setPosition(latLng);
         }
-//        zoom = 0;
-        if(marker==null){
-       marker=mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));}
-        else {
-            marker.setPosition(new LatLng(lat,lng));
-        }
-//        for (int key : markerlist.keySet()) {
-//            if (hiddens.size() == 0 || hiddens.size() < markerlist.size()) {
-//                addMarker(markerlist.get(key), 0);
-//            } else {
-//                addMarker(markerlist.get(key), hiddens.get(key));
-//
-//            }
-//
-//
-//        }
-
-
     }
+
 
 
     @Override
     public void onLocationChanged(Location location) {
         lat = location.getLatitude();
         lng = location.getLongitude();
+        addMarker(new LatLng(lat,lng));
 
+        if (isInsideArea(new LatLng(lat,lng))){
+            startTimer(1,0);
+        }
 
-        updateDataMapUI();
-
-        if ( times.size() > 0) {
+       /* if ( times.size() > 0) {
             //  Toast.makeText(MapActivity.this,lists.get(0).size()+"",Toast.LENGTH_LONG).show();
             for (int i = 0; i < times.size(); i++) {
 
@@ -524,7 +517,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
                 }
-            }}
+            }}*/
 
     }
 
@@ -586,95 +579,92 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void startTimer(int time, int i) {
-        if (lists.size() > 0) {
-            timer = new CountDownTimer(time * 1000, 1000) {
-                @Override
-                public void onTick(long l) {
-                    SimpleDateFormat format = new SimpleDateFormat("ss", Locale.ENGLISH);
-                    String time = format.format(new Date(l));
-                    if (lists.size() > 0 && hiddenstimer.get(i) == 0) {
-                        binding.fr.setVisibility(View.VISIBLE);
-                        binding.tv1.setText(time);
-                    }
-                    //  Toast.makeText(MapActivity.this,time,Toast.LENGTH_LONG).show();
+
+        timer = new CountDownTimer(time * 1000, 1000) {
+            @Override
+            public void onTick(long l) {
+                SimpleDateFormat format = new SimpleDateFormat("ss", Locale.ENGLISH);
+                String time = format.format(new Date(l));
+                if (lists.size() > 0 && hiddenstimer.get(i) == 0) {
+                    binding.fr.setVisibility(View.VISIBLE);
+                    binding.tv1.setText(time);
                 }
+                //  Toast.makeText(MapActivity.this,time,Toast.LENGTH_LONG).show();
+            }
 
 
-                @Override
-                public void onFinish() {
-                    binding.tv1.setText("0");
-                    binding.fr.setVisibility(View.GONE);
-                    String sound_Path = "android.resource://" + getPackageName() + "/" + R.raw.not;
-                    //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
-                    if (countsnum.size() > 0) {
-                        for (int l = 0; l < countsnum.get(i); l++) {
-                            if (files.size() > 0 && files.get(i) != null && files.get(i).getPath() != null && !files.get(i).getPath().equals(null)) {
-                                initAudio(files.get(i).getPath());
-                                //  CreateDialogDisplay(MapActivity.this, files.get(i).getPath());
-                            }
-                            if (!title.get(i).equals(null) && title.get(i) != null && !title.get(i).isEmpty()) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            @Override
+            public void onFinish() {
+                binding.tv1.setText("0");
+                binding.fr.setVisibility(View.GONE);
+                String sound_Path = "android.resource://" + getPackageName() + "/" + R.raw.not;
+                //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
+                if (countsnum.size() > 0) {
+                    for (int l = 0; l < countsnum.get(i); l++) {
+                        if (files.size() > 0 && files.get(i) != null && files.get(i).getPath() != null && !files.get(i).getPath().equals(null)) {
+                            initAudio(files.get(i).getPath());
+                            //  CreateDialogDisplay(MapActivity.this, files.get(i).getPath());
+                        }
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
-                                    String CHANNEL_ID = "my_channel_02";
-                                    CharSequence CHANNEL_NAME = "my_channel_name";
-                                    int IMPORTANCE = NotificationManager.IMPORTANCE_HIGH;
+                            String CHANNEL_ID = "my_channel_02";
+                            CharSequence CHANNEL_NAME = "my_channel_name";
+                            int IMPORTANCE = NotificationManager.IMPORTANCE_HIGH;
 
-                                    final NotificationCompat.Builder builder = new NotificationCompat.Builder(MapActivity.this);
-                                    final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
-                                    channel.setShowBadge(true);
-                                    channel.setSound(Uri.parse(sound_Path), new AudioAttributes.Builder()
-                                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                                            .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
-                                            .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
-                                            .build()
-                                    );
+                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(MapActivity.this);
+                            final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
+                            channel.setShowBadge(true);
+                            channel.setSound(Uri.parse(sound_Path), new AudioAttributes.Builder()
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                                    .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
+                                    .build()
+                            );
 
-                                    builder.setChannelId(CHANNEL_ID);
-                                    builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-                                    builder.setSmallIcon(R.drawable.ic_notification);
-
-
-                                    builder.setContentTitle(title.get(i));
+                            builder.setChannelId(CHANNEL_ID);
+                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
+                            builder.setSmallIcon(R.drawable.ic_notification);
 
 
-                                    builder.setContentText(content.get(i));
+                            builder.setContentTitle(title.get(i));
 
 
-                                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-                                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
-                                    builder.setLargeIcon(bitmap);
-                                    manager.createNotificationChannel(channel);
-                                    manager.notify(new Random().nextInt(200), builder.build());
-                                } else {
-                                    //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
-
-                                    final NotificationCompat.Builder builder = new NotificationCompat.Builder(MapActivity.this);
-
-                                    builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-                                    builder.setSmallIcon(R.drawable.ic_notification);
-
-                                    builder.setContentTitle(title.get(i));
+                            builder.setContentText(content.get(i));
 
 
-                                    builder.setContentText(content.get(i));
+                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
+                            builder.setLargeIcon(bitmap);
+                            manager.createNotificationChannel(channel);
+                            manager.notify(new Random().nextInt(200), builder.build());
+                        } else {
+                            //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
+
+                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(MapActivity.this);
+
+                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
+                            builder.setSmallIcon(R.drawable.ic_notification);
+
+                            builder.setContentTitle(title.get(i));
 
 
-                                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                            builder.setContentText(content.get(i));
 
-                                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
-                                    builder.setLargeIcon(bitmap);
-                                    manager.notify(new Random().nextInt(200), builder.build());
 
-                                }
-                            }
+                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
+                            builder.setLargeIcon(bitmap);
+                            manager.notify(new Random().nextInt(200), builder.build());
+
                         }
                     }
                 }
-            };
+            }
+        };
 
-            timer.start();
-        }
+        timer.start();
     }
 
     @Override
@@ -1142,29 +1132,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
                 times.add(Integer.parseInt(time));
                 countsnum.add(countnum);
-//                AddGeo addGeo = new AddGeo();
-//                addGeo.setContent(content.get(content.size() - 1));
-//                addGeo.setTitle(title.get(title.size() - 1));
-//                List<Double> list1 = markerlist.get(markerlist.size() - 1);
-//                addGeo.setFrom_lat(list1.get(0));
-//                addGeo.setFrom_lng(list1.get(1));
-//                addGeo.setTo_lat(list1.get(2));
-//                addGeo.setTo_lng(list1.get(3));
-//                addGeo.setFrom(from.get(from.size() - 1));
-//                addGeo.setTo(to.get(to.size() - 1));
-//                addGeo.setOpen(open);
-//                addGeo.setShow(hidden);
-//                addGeo.setHidden(hidden2);
-//                addGeo.setGo(goes);
-//                if (files.size() == title.size()) {
-//                    addGeo.setSound(files.get(files.size() - 1).getPath());
-//                } else {
-//                    addGeo.setSound(null);
-//                }
-//                addGeo.setCount(countnum);
-//                addGeo.setTime(Integer.parseInt(time));
-//                my_database.myDoe().add_geo(addGeo);
-                updateDataMapUI();
                 dialog.dismiss();
             }
         });
