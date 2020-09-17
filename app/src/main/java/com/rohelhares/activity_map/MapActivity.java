@@ -253,7 +253,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 go.clear();
                 markerlist.clear();
                 my_database.myDoe().deleteallorder();
-                updateDataMapUI();
+                //updateDataMapUI();
             }
         });
         my_database = Room.databaseBuilder(getApplicationContext(), My_Database.class, "geodb").allowMainThreadQueries().build();
@@ -393,7 +393,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), zoom));
         }
 //        zoom = 0;
-       mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+        if(marker==null){
+       marker=mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));}
+        else {
+            marker.setPosition(new LatLng(lat,lng));
+        }
 //        for (int key : markerlist.keySet()) {
 //            if (hiddens.size() == 0 || hiddens.size() < markerlist.size()) {
 //                addMarker(markerlist.get(key), 0);
