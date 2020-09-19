@@ -426,7 +426,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             //  Toast.makeText(MapActivity.this,lists.get(0).size()+"",Toast.LENGTH_LONG).show();
 
                 //     Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
-                if (isInsideArea(new LatLng(lat, lng))) {
+                if (isInsideArea(new LatLng(lat, lng))&&times.size()>0) {
                     Log.e("llllnnbbb",lat+"");
 
                     //Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
