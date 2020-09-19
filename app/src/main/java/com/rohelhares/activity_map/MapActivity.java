@@ -258,7 +258,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 allPolygon.clear();
                 mMap.clear();
                 marker = null;
-                addMarker(new LatLng(lat,lng));
+                //addMarker(new LatLng(lat, lng));
             }
         });
         my_database = Room.databaseBuilder(getApplicationContext(), My_Database.class, "geodb").allowMainThreadQueries().build();
@@ -330,7 +330,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 //                }
 //            }
             mMap.setOnMapClickListener(latLng -> {
-                if (canDraw){
+                if (canDraw) {
                     if (polygonList.size() >= 4) {
                         allPolygon.add(polygonList);
                         polygonList = new ArrayList<>();
@@ -338,12 +338,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     polygonList.add(latLng);
                     mMap.addMarker(new MarkerOptions().position(latLng).title(""));
 
-                    if (polygonList.size()==4){
+                    if (polygonList.size() == 4) {
                         drawPolygon();
                         CreateDialogAlert(this);
                         canDraw = false;
 
-                    }}
+                    }
+                }
 
 
 /*
@@ -387,34 +388,39 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         PolygonOptions polygonOptions = new PolygonOptions();
         polygonOptions.addAll(polygonList);
         polygonOptions.geodesic(true);
-        polygonOptions.fillColor(ContextCompat.getColor(this,R.color.black));
-        if (mMap!=null){
+        polygonOptions.fillColor(ContextCompat.getColor(this, R.color.black));
+        if (mMap != null) {
             mMap.addPolygon(polygonOptions);
+
         }
     }
 
-    private void  addMarker(LatLng latLng){
-        if (marker==null){
+    private void addMarker(LatLng latLng) {
+        if (marker == null) {
             marker = mMap.addMarker(new MarkerOptions().position(latLng));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,16.5f));
-        }else {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16.5f));
+        } else {
             marker.setPosition(latLng);
         }
     }
 
 
-
+    @SuppressLint("MissingPermission")
     @Override
     public void onLocationChanged(Location location) {
         lat = location.getLatitude();
         lng = location.getLongitude();
-        addMarker(new LatLng(lat,lng));
 
-        if (isInsideArea(new LatLng(lat,lng))){
+        // addMarker(new LatLng(lat,lng));
+
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lng), 16.5f));
+
+            mMap.setMyLocationEnabled(true);
+
             startTimer(1,0);
-        }
 
-       /* if ( times.size() > 0) {
+
+        /*if ( times.size() > 0) {
             //  Toast.makeText(MapActivity.this,lists.get(0).size()+"",Toast.LENGTH_LONG).show();
             for (int i = 0; i < times.size(); i++) {
 
@@ -555,12 +561,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == loc_req) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                mMap.setMyLocationEnabled(true);
                 initGoogleApiClient();
             } else {
                 Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
@@ -700,6 +708,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void CheckPermission() {
         if (ActivityCompat.checkSelfPermission(this, fineLocPerm) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{fineLocPerm}, loc_req);
+            mMap.setMyLocationEnabled(true);
+
         } else {
 
             initGoogleApiClient();
