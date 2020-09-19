@@ -333,13 +333,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mMap.setOnMapClickListener(latLng -> {
                 if (canDraw) {
                     if (polygonList.size() >= 4) {
-                        allPolygon.add(polygonList);
+                       // allPolygon.add(polygonList);
                         polygonList = new ArrayList<>();
                     }
                     polygonList.add(latLng);
                     mMap.addMarker(new MarkerOptions().position(latLng).title(""));
 
                     if (polygonList.size() == 4) {
+                        allPolygon.add(polygonList);
+
                         drawPolygon();
                         CreateDialogAlert(this);
                         canDraw = false;
