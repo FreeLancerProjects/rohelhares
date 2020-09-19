@@ -166,6 +166,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private List<List<LatLng>> allPolygon;
     private List<LatLng> polygonList;
     private boolean canDraw = true;
+    private int position;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -417,15 +418,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
             mMap.setMyLocationEnabled(true);
 
-            startTimer(1,0);
+        ///    startTimer(1,0);
 
 
-        /*if ( times.size() > 0) {
             //  Toast.makeText(MapActivity.this,lists.get(0).size()+"",Toast.LENGTH_LONG).show();
-            for (int i = 0; i < times.size(); i++) {
 
                 //     Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
                 if (isInsideArea(new LatLng(lat, lng))) {
+                    Log.e("llllnnbbb",lat+"");
+
                     //Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
                     SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
                     Date date = new Date(System.currentTimeMillis());
@@ -436,27 +437,27 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     }
                     Date date1 = null;
                     try {
-                        date1 = formatter.parse(from.get(i));
+                        date1 = formatter.parse(from.get(position));
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
                     Date date2 = null;
                     try {
-                        date2 = formatter.parse(to.get(i));
+                        date2 = formatter.parse(to.get(position));
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
 
-                    if (opens.get(i) == 1 && date.getTime() >= date1.getTime() && date.getTime() < date2.getTime()) {
+                    if (opens.get(position) == 1 && date.getTime() >= date1.getTime() && date.getTime() < date2.getTime()) {
 
 
                         String sound_Path = "android.resource://" + getPackageName() + "/" + R.raw.not;
                         //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
-                        for (int l = 0; l < countsnum.get(i); l++) {
-                            if (files.get(i) != null && files.get(i).getPath() != null && !files.get(i).getPath().equals(null)) {
-                                initAudio(files.get(i).getPath());
+                        for (int l = 0; l < countsnum.get(position); l++) {
+                            if (files.get(position) != null && files.get(position).getPath() != null && !files.get(position).getPath().equals(null)) {
+                                initAudio(files.get(position).getPath());
                             }
-                            if (!title.get(i).equals(null) && title.get(i) != null && !title.get(i).isEmpty()) {
+                            if (!title.get(position).equals(null) && title.get(position) != null && !title.get(position).isEmpty()) {
 
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
@@ -479,10 +480,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                     builder.setSmallIcon(R.drawable.ic_notification);
 
 
-                                    builder.setContentTitle(title.get(i));
+                                    builder.setContentTitle(title.get(position));
 
 
-                                    builder.setContentText(content.get(i));
+                                    builder.setContentText(content.get(position));
 
 
                                     NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -499,10 +500,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                     builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
                                     builder.setSmallIcon(R.drawable.ic_notification);
 
-                                    builder.setContentTitle(title.get(i));
+                                    builder.setContentTitle(title.get(position));
 
 
-                                    builder.setContentText(content.get(i));
+                                    builder.setContentText(content.get(position));
 
 
                                     NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -516,14 +517,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         }
 
                     } else {
-                        startTimer(times.get(i), i);
+                        startTimer(times.get(position), position);
 
                     }
-                    break;
 
 
                 }
-            }}*/
+
 
     }
 
@@ -593,7 +593,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onTick(long l) {
                 SimpleDateFormat format = new SimpleDateFormat("ss", Locale.ENGLISH);
                 String time = format.format(new Date(l));
-                if (lists.size() > 0 && hiddenstimer.get(i) == 0) {
+                if ( hiddenstimer.get(i) == 0) {
                     binding.fr.setVisibility(View.VISIBLE);
                     binding.tv1.setText(time);
                 }
@@ -708,8 +708,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void CheckPermission() {
         if (ActivityCompat.checkSelfPermission(this, fineLocPerm) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{fineLocPerm}, loc_req);
-            mMap.setMyLocationEnabled(true);
-
+            if(mMap!=null) {
+                mMap.setMyLocationEnabled(true);
+            }
         } else {
 
             initGoogleApiClient();
@@ -904,9 +905,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private boolean isInsideArea(LatLng latLng){
+
         if (allPolygon.size()>0){
             for (List<LatLng> latLngs : allPolygon){
                 if (PolyUtil.containsLocation(latLng,latLngs,true)){
+                    position=allPolygon.indexOf(latLngs);
                     return true;
                 }
             }
