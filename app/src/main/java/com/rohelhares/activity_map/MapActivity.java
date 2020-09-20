@@ -622,7 +622,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             initAudio(files.get(i).getPath());
                             //  CreateDialogDisplay(MapActivity.this, files.get(i).getPath());
                         }
-                        if (title.get(i) != null) {
+                        if (!title.get(position).equals(null) && title.get(position) != null && !title.get(position).isEmpty()) {
                             CreateDialogshowMesaage(MapActivity.this, title.get(i), content.get(i));
                         }
 //                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -1132,6 +1132,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 if (binding.rdhiddeen.isChecked()) {
                     hidden = 1;
                     polygonOptionsList.get(polygonOptionsList.size() - 1).visible(false);
+
                 }
                 title.add(binding.edtName.getText().toString() + "");
                 content.add(binding.edtContent.getText().toString() + "");
