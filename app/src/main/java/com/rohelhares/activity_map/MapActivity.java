@@ -83,6 +83,7 @@ import com.rohelhares.Room_Database.My_Database;
 import com.rohelhares.adapter.TimesAdapter;
 import com.rohelhares.databinding.DialogDisplayBinding;
 import com.rohelhares.databinding.DialogMessageBinding;
+import com.rohelhares.databinding.DialogShowmessageBinding;
 import com.rohelhares.model.PlaceDirectionModel;
 import com.rohelhares.model.TimesModel;
 import com.rohelhares.remote.Api;
@@ -167,6 +168,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private List<LatLng> polygonList;
     private boolean canDraw = true;
     private int position;
+    private AlertDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -333,7 +335,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mMap.setOnMapClickListener(latLng -> {
                 if (canDraw) {
                     if (polygonList.size() >= 4) {
-                       // allPolygon.add(polygonList);
+                        // allPolygon.add(polygonList);
                         polygonList = new ArrayList<>();
                     }
                     polygonList.add(latLng);
@@ -416,115 +418,116 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         // addMarker(new LatLng(lat,lng));
 
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lng), 16.5f));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 16.5f));
 
-            mMap.setMyLocationEnabled(true);
+        mMap.setMyLocationEnabled(true);
 
         ///    startTimer(1,0);
 
 
-            //  Toast.makeText(MapActivity.this,lists.get(0).size()+"",Toast.LENGTH_LONG).show();
+        //  Toast.makeText(MapActivity.this,lists.get(0).size()+"",Toast.LENGTH_LONG).show();
 
-                //     Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
-                if (isInsideArea(new LatLng(lat, lng))&&times.size()>0) {
-                    Log.e("llllnnbbb",lat+"");
+        //     Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
+        if (isInsideArea(new LatLng(lat, lng)) && times.size() > 0) {
+            Log.e("llllnnbbb", lat + "");
 
-                    //Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
-                    SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
-                    Date date = new Date(System.currentTimeMillis());
-                    try {
-                        date = formatter.parse(formatter.format(date));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
+            //Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
+            SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
+            Date date = new Date(System.currentTimeMillis());
+            try {
+                date = formatter.parse(formatter.format(date));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            Date date1 = null;
+            try {
+                date1 = formatter.parse(from.get(position));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            Date date2 = null;
+            try {
+                date2 = formatter.parse(to.get(position));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            if (opens.get(position) == 1 && date.getTime() >= date1.getTime() && date.getTime() < date2.getTime()) {
+
+
+                String sound_Path = "android.resource://" + getPackageName() + "/" + R.raw.not;
+                //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
+                for (int l = 0; l < countsnum.get(position); l++) {
+                    if (files.get(position) != null && files.get(position).getPath() != null && !files.get(position).getPath().equals(null)) {
+                        initAudio(files.get(position).getPath());
                     }
-                    Date date1 = null;
-                    try {
-                        date1 = formatter.parse(from.get(position));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
+                    if (!title.get(position).equals(null) && title.get(position) != null && !title.get(position).isEmpty()) {
+                        CreateDialogshowMesaage(this, title.get(position), content.get(position));
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//
+//                            String CHANNEL_ID = "my_channel_02";
+//                            CharSequence CHANNEL_NAME = "my_channel_name";
+//                            int IMPORTANCE = NotificationManager.IMPORTANCE_HIGH;
+//
+//                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+//                            final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
+//                            channel.setShowBadge(true);
+//                            channel.setSound(Uri.parse(sound_Path), new AudioAttributes.Builder()
+//                                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+//                                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+//                                    .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
+//                                    .build()
+//                            );
+//
+//                            builder.setChannelId(CHANNEL_ID);
+//                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
+//                            builder.setSmallIcon(R.drawable.ic_notification);
+//
+//
+//                            builder.setContentTitle(title.get(position));
+//
+//
+//                            builder.setContentText(content.get(position));
+//
+//
+//                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//
+//                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
+//                            builder.setLargeIcon(bitmap);
+//                            manager.createNotificationChannel(channel);
+//                            manager.notify(new Random().nextInt(200), builder.build());
+//                        }
+//                        else {
+//                            //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
+//
+//                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+//
+//                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
+//                            builder.setSmallIcon(R.drawable.ic_notification);
+//
+//                            builder.setContentTitle(title.get(position));
+//
+//
+//                            builder.setContentText(content.get(position));
+//
+//
+//                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//
+//                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
+//                            builder.setLargeIcon(bitmap);
+//                            manager.notify(new Random().nextInt(200), builder.build());
+//
+//                        }
                     }
-                    Date date2 = null;
-                    try {
-                        date2 = formatter.parse(to.get(position));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-
-                    if (opens.get(position) == 1 && date.getTime() >= date1.getTime() && date.getTime() < date2.getTime()) {
-
-
-                        String sound_Path = "android.resource://" + getPackageName() + "/" + R.raw.not;
-                        //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
-                        for (int l = 0; l < countsnum.get(position); l++) {
-                            if (files.get(position) != null && files.get(position).getPath() != null && !files.get(position).getPath().equals(null)) {
-                                initAudio(files.get(position).getPath());
-                            }
-                            if (!title.get(position).equals(null) && title.get(position) != null && !title.get(position).isEmpty()) {
-
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-                                    String CHANNEL_ID = "my_channel_02";
-                                    CharSequence CHANNEL_NAME = "my_channel_name";
-                                    int IMPORTANCE = NotificationManager.IMPORTANCE_HIGH;
-
-                                    final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-                                    final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
-                                    channel.setShowBadge(true);
-                                    channel.setSound(Uri.parse(sound_Path), new AudioAttributes.Builder()
-                                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                                            .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
-                                            .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
-                                            .build()
-                                    );
-
-                                    builder.setChannelId(CHANNEL_ID);
-                                    builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-                                    builder.setSmallIcon(R.drawable.ic_notification);
-
-
-                                    builder.setContentTitle(title.get(position));
-
-
-                                    builder.setContentText(content.get(position));
-
-
-                                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-                                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
-                                    builder.setLargeIcon(bitmap);
-                                    manager.createNotificationChannel(channel);
-                                    manager.notify(new Random().nextInt(200), builder.build());
-                                } else {
-                                    //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
-
-                                    final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-
-                                    builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-                                    builder.setSmallIcon(R.drawable.ic_notification);
-
-                                    builder.setContentTitle(title.get(position));
-
-
-                                    builder.setContentText(content.get(position));
-
-
-                                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-                                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
-                                    builder.setLargeIcon(bitmap);
-                                    manager.notify(new Random().nextInt(200), builder.build());
-
-                                }
-                            }
-                        }
-
-                    } else {
-                        startTimer(times.get(position), position);
-
-                    }
-
-
                 }
+
+            } else {
+                startTimer(times.get(position), position);
+
+            }
+
+
+        }
 
 
     }
@@ -595,7 +598,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onTick(long l) {
                 SimpleDateFormat format = new SimpleDateFormat("ss", Locale.ENGLISH);
                 String time = format.format(new Date(l));
-                if ( hiddenstimer.get(i) == 0) {
+                if (hiddenstimer.get(i) == 0) {
                     binding.fr.setVisibility(View.VISIBLE);
                     binding.tv1.setText(time);
                 }
@@ -615,60 +618,64 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             initAudio(files.get(i).getPath());
                             //  CreateDialogDisplay(MapActivity.this, files.get(i).getPath());
                         }
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-                            String CHANNEL_ID = "my_channel_02";
-                            CharSequence CHANNEL_NAME = "my_channel_name";
-                            int IMPORTANCE = NotificationManager.IMPORTANCE_HIGH;
-
-                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(MapActivity.this);
-                            final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
-                            channel.setShowBadge(true);
-                            channel.setSound(Uri.parse(sound_Path), new AudioAttributes.Builder()
-                                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
-                                    .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
-                                    .build()
-                            );
-
-                            builder.setChannelId(CHANNEL_ID);
-                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-                            builder.setSmallIcon(R.drawable.ic_notification);
-
-
-                            builder.setContentTitle(title.get(i));
-
-
-                            builder.setContentText(content.get(i));
-
-
-                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
-                            builder.setLargeIcon(bitmap);
-                            manager.createNotificationChannel(channel);
-                            manager.notify(new Random().nextInt(200), builder.build());
-                        } else {
-                            //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
-
-                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(MapActivity.this);
-
-                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-                            builder.setSmallIcon(R.drawable.ic_notification);
-
-                            builder.setContentTitle(title.get(i));
-
-
-                            builder.setContentText(content.get(i));
-
-
-                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
-                            builder.setLargeIcon(bitmap);
-                            manager.notify(new Random().nextInt(200), builder.build());
-
+                        if (title.get(i) != null) {
+                            CreateDialogshowMesaage(MapActivity.this, title.get(i), content.get(i));
                         }
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//
+//                            String CHANNEL_ID = "my_channel_02";
+//                            CharSequence CHANNEL_NAME = "my_channel_name";
+//                            int IMPORTANCE = NotificationManager.IMPORTANCE_HIGH;
+//
+//                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(MapActivity.this);
+//                            final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
+//                            channel.setShowBadge(true);
+//                            channel.setSound(Uri.parse(sound_Path), new AudioAttributes.Builder()
+//                                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+//                                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+//                                    .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
+//                                    .build()
+//                            );
+//
+//                            builder.setChannelId(CHANNEL_ID);
+//                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
+//                            builder.setSmallIcon(R.drawable.ic_notification);
+//
+//
+//                            builder.setContentTitle(title.get(i));
+//
+//
+//                            builder.setContentText(content.get(i));
+//
+//
+//                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//
+//                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
+//                            builder.setLargeIcon(bitmap);
+//                            manager.createNotificationChannel(channel);
+//                            manager.notify(new Random().nextInt(200), builder.build());
+//                        }
+//                        else {
+//                            //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
+//
+//                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(MapActivity.this);
+//
+//                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
+//                            builder.setSmallIcon(R.drawable.ic_notification);
+//
+//                            builder.setContentTitle(title.get(i));
+//
+//
+//                            builder.setContentText(content.get(i));
+//
+//
+//                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//
+//                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
+//                            builder.setLargeIcon(bitmap);
+//                            manager.notify(new Random().nextInt(200), builder.build());
+//
+//                        }
                     }
                 }
             }
@@ -710,7 +717,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void CheckPermission() {
         if (ActivityCompat.checkSelfPermission(this, fineLocPerm) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{fineLocPerm}, loc_req);
-            if(mMap!=null) {
+            if (mMap != null) {
                 mMap.setMyLocationEnabled(true);
             }
         } else {
@@ -906,12 +913,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
-    private boolean isInsideArea(LatLng latLng){
+    private boolean isInsideArea(LatLng latLng) {
 
-        if (allPolygon.size()>0){
-            for (List<LatLng> latLngs : allPolygon){
-                if (PolyUtil.containsLocation(latLng,latLngs,true)){
-                    position=allPolygon.indexOf(latLngs);
+        if (allPolygon.size() > 0) {
+            for (List<LatLng> latLngs : allPolygon) {
+                if (PolyUtil.containsLocation(latLng, latLngs, true)) {
+                    position = allPolygon.indexOf(latLngs);
                     return true;
                 }
             }
@@ -919,6 +926,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         return false;
     }
+
     public void CreateDialogAlert(Context context) {
         final AlertDialog dialog = new AlertDialog.Builder(context)
                 .create();
@@ -1257,6 +1265,28 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 checkReadPermission();
             }
         });
+        binding.cardViewclose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.setView(binding.getRoot());
+        dialog.show();
+    }
+
+    public void CreateDialogshowMesaage(Context context, String title, String Contentdata) {
+        if (dialog != null) {
+            dialog.dismiss();
+        }
+        dialog = new AlertDialog.Builder(context)
+                .create();
+        DialogShowmessageBinding binding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.dialog_showmessage, null, false);
+
+        binding.edtName.setText(title);
+        binding.edtContent.setText(Contentdata);
+
         binding.cardViewclose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
