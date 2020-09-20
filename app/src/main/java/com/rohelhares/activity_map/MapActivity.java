@@ -169,6 +169,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private boolean canDraw = true;
     private int position;
     private AlertDialog dialog;
+    private List<PolygonOptions> polygonOptionsList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -211,6 +212,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void initView() {
         allPolygon = new ArrayList<>();
         polygonList = new ArrayList<>();
+        polygonOptionsList = new ArrayList<>();
         title = new ArrayList<>();
         content = new ArrayList<>();
         times = new ArrayList<>();
@@ -392,8 +394,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void drawPolygon() {
         PolygonOptions polygonOptions = new PolygonOptions();
         polygonOptions.addAll(polygonList);
+
         polygonOptions.geodesic(true);
         polygonOptions.fillColor(ContextCompat.getColor(this, R.color.black));
+        polygonOptionsList.add(polygonOptions);
         if (mMap != null) {
             mMap.addPolygon(polygonOptions);
 
@@ -1127,12 +1131,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onClick(View view) {
                 if (binding.rdhiddeen.isChecked()) {
                     hidden = 1;
+                    polygonOptionsList.get(polygonOptionsList.size() - 1).visible(false);
                 }
                 title.add(binding.edtName.getText().toString() + "");
                 content.add(binding.edtContent.getText().toString() + "");
                 hiddens.add(hidden);
                 hiddenstimer.add(hidden2);
                 opens.add(open);
+                if (hidden == 1) {
+
+                }
                 go.add(goes);
                 try {
                     time = binding.edtnum.getText().toString();
