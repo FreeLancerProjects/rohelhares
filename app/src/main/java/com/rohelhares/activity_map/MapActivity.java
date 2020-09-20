@@ -170,6 +170,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private int position;
     private AlertDialog dialog;
     private List<PolygonOptions> polygonOptionsList;
+    private boolean zoomL=true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -421,8 +422,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         lng = location.getLongitude();
 
         // addMarker(new LatLng(lat,lng));
+if (zoomL){
+    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 16.5f));
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 16.5f));
+}
+zoomL=false;
 
         mMap.setMyLocationEnabled(true);
 
@@ -455,7 +459,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             } catch (ParseException e) {
                // e.printStackTrace();
             }
-
+Log.e("flflfll",date.toString()+""+date1.toString()+""+date2.toString());
             if (opens.get(position) == 1 && date.getTime() >= date1.getTime() && date.getTime() < date2.getTime()) {
 
 
