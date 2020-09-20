@@ -272,6 +272,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 //        for (int i = 0; i < addgeo.size(); i++) {
 //            content.add(addgeo.get(
 //                    i).getContent());
+//                    i).getContent());
 //            title.add(addgeo.get(i).getTitle());
 //            times.add(addgeo.get(i).getTime());
 //            hiddens.add(addgeo.get(i).getShow());
@@ -459,7 +460,7 @@ zoomL=false;
             } catch (ParseException e) {
                // e.printStackTrace();
             }
-Log.e("flflfll",date.toString()+""+date1.toString()+""+date2.toString());
+Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+"  "+date2.getTime());
             if (opens.get(position) == 1 && date.getTime() >= date1.getTime() && date.getTime() < date2.getTime()) {
 
 
@@ -529,9 +530,14 @@ Log.e("flflfll",date.toString()+""+date1.toString()+""+date2.toString());
                     }
                 }
 
-            } else {
-                startTimer(times.get(position), position);
-
+            }
+            else if(opens.get(position)!=1){
+                if(times.get(position)>0) {
+                    startTimer(times.get(position), position);
+                }
+                else {
+                    CreateDialogshowMesaage(MapActivity.this,title.get(position),content.get(position));
+                }
             }
 
 
@@ -1137,6 +1143,8 @@ Log.e("flflfll",date.toString()+""+date1.toString()+""+date2.toString());
                     hidden = 1;
                     polygonOptionsList.get(polygonOptionsList.size() - 1).visible(false);
 
+                }else {
+                    hidden=0;
                 }
                 title.add(binding.edtName.getText().toString() + "");
                 content.add(binding.edtContent.getText().toString() + "");
@@ -1144,6 +1152,12 @@ Log.e("flflfll",date.toString()+""+date1.toString()+""+date2.toString());
                 hiddenstimer.add(hidden2);
                 if (files.size()<hiddens.size()){
                     files.add(null);
+                }
+                if(binding.rdhour.isChecked()){
+                    open=1;
+                }
+                else {
+                    open=0;
                 }
                 opens.add(open);
                 if (hidden == 1) {
@@ -1169,6 +1183,7 @@ Log.e("flflfll",date.toString()+""+date1.toString()+""+date2.toString());
                     to.add(binding.calenderto.getHour() + ":" + binding.calenderto.getMinute());
 
                 }
+
                 times.add(Integer.parseInt(time));
                 countsnum.add(countnum);
                 dialog.dismiss();
