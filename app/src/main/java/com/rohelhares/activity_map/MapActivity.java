@@ -432,7 +432,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         //  Toast.makeText(MapActivity.this,lists.get(0).size()+"",Toast.LENGTH_LONG).show();
 
         //     Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
-        if (isInsideArea(new LatLng(lat, lng)) && times.size() > 0) {
+        if (isInsideArea(new LatLng(lat, lng)) && times.size() > 0&&times.size()==allPolygon.size()) {
             Log.e("llllnnbbb", lat + "");
 
             //Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
@@ -447,13 +447,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             try {
                 date1 = formatter.parse(from.get(position));
             } catch (ParseException e) {
-                e.printStackTrace();
+             //   e.printStackTrace();
             }
             Date date2 = null;
             try {
                 date2 = formatter.parse(to.get(position));
             } catch (ParseException e) {
-                e.printStackTrace();
+               // e.printStackTrace();
             }
 
             if (opens.get(position) == 1 && date.getTime() >= date1.getTime() && date.getTime() < date2.getTime()) {
@@ -618,8 +618,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
                 if (countsnum.size() > 0) {
                     for (int l = 0; l < countsnum.get(i); l++) {
-                        if (files.size() > 0 && files.get(i) != null && files.get(i).getPath() != null && !files.get(i).getPath().equals(null)) {
-                            initAudio(files.get(i).getPath());
+                        if (files.size() > 0 && files.get(position) != null && files.get(position).getPath() != null && !files.get(position).getPath().equals(null)) {
+                            initAudio(files.get(position).getPath());
                             //  CreateDialogDisplay(MapActivity.this, files.get(i).getPath());
                         }
                         if (!title.get(position).equals(null) && title.get(position) != null && !title.get(position).isEmpty()) {
@@ -1138,6 +1138,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 content.add(binding.edtContent.getText().toString() + "");
                 hiddens.add(hidden);
                 hiddenstimer.add(hidden2);
+                if (files.size()<hiddens.size()){
+                    files.add(null);
+                }
                 opens.add(open);
                 if (hidden == 1) {
 
