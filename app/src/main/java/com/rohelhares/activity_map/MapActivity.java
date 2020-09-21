@@ -1183,7 +1183,6 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
                     to.add(binding.calenderto.getHour() + ":" + binding.calenderto.getMinute());
 
                 }
-
                 times.add(Integer.parseInt(time));
                 countsnum.add(countnum);
                 dialog.dismiss();
