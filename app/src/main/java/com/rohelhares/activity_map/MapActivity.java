@@ -171,6 +171,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private AlertDialog dialog;
     private List<PolygonOptions> polygonOptionsList;
     private boolean zoomL=true;
+    private List<Marker> markers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -211,6 +212,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void initView() {
+        markers = new ArrayList<>();
         allPolygon = new ArrayList<>();
         polygonList = new ArrayList<>();
         polygonOptionsList = new ArrayList<>();
@@ -337,19 +339,27 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 //                }
 //            }
             mMap.setOnMapClickListener(latLng -> {
+                Log.e("dd","11");
+
                 if (canDraw) {
+                    Log.e("dd","22");
+
                     if (polygonList.size() >= 4) {
                         // allPolygon.add(polygonList);
                         polygonList = new ArrayList<>();
+                        markerlist.clear();;
                     }
                     polygonList.add(latLng);
-                    mMap.addMarker(new MarkerOptions().position(latLng).title(""));
+                    Marker marker = mMap.addMarker(new MarkerOptions().position(latLng).title(""));
+                    markers.add(marker);
 
                     if (polygonList.size() == 4) {
+                        Log.e("dd","33");
+
                         allPolygon.add(polygonList);
 
-                        drawPolygon();
-                        CreateDialogAlert(this);
+                        //drawPolygon();
+                        CreateDialogAlert(this,polygonList);
                         canDraw = false;
 
                     }
@@ -393,7 +403,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
-    private void drawPolygon() {
+    private void drawPolygon(List<LatLng> polygonList) {
         PolygonOptions polygonOptions = new PolygonOptions();
         polygonOptions.addAll(polygonList);
 
@@ -941,7 +951,7 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
         return false;
     }
 
-    public void CreateDialogAlert(Context context) {
+    public void CreateDialogAlert(Context context, List<LatLng> polygonList) {
         final AlertDialog dialog = new AlertDialog.Builder(context)
                 .create();
 
@@ -1010,7 +1020,7 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
         binding.btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                CreateDialogMesaage(context);
+                CreateDialogMesaage(context,polygonList);
                 dialog.dismiss();
 
             }
@@ -1020,7 +1030,7 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
         dialog.show();
     }
 
-    public void CreateDialogMesaage(Context context) {
+    public void CreateDialogMesaage(Context context, List<LatLng> polygonList) {
         TimesAdapter timesAdapter;
         List<TimesModel> timesModels = new ArrayList<>();
         countnum = 1;
@@ -1054,6 +1064,8 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     hidden = 1;
+
+
                 }
             }
         });
@@ -1065,14 +1077,14 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
                 }
             }
         });
-        binding.rdhiddeen.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+       /* binding.rdhiddeen.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     hidden2 = 1;
                 }
             }
-        });
+        });*/
         binding.rdseconed.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -1140,11 +1152,17 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
             @Override
             public void onClick(View view) {
                 if (binding.rdhiddeen.isChecked()) {
-                    hidden = 1;
-                    polygonOptionsList.get(polygonOptionsList.size() - 1).visible(false);
 
+                    for (Marker marker:markers){
+                        marker.remove();
+                    }
+
+                   /* hidden = 1;
+                    polygonOptionsList.get(polygonOptionsList.size() - 1).visible(false);
+*/
                 }else {
-                    hidden=0;
+                    drawPolygon(polygonList);
+                   // hidden=0;
                 }
                 title.add(binding.edtName.getText().toString() + "");
                 content.add(binding.edtContent.getText().toString() + "");
