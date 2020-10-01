@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">روح الحارس</string>
-    <string name="map_api_key">AIzaSyDa7vtwUx4fiAqhKntADNhywJyfbx118OI</string>
+    <string name="map_api_key">AIzaSyDWL4T8WERSHrXQ464jk8pKQf_0WLiDbgE</string>
     <string name="go"> ذهاب فقط</string>
     <string name="returns"> عودة فقط</string>
     <string name="go_and_return">ذهاب وعودة</string>

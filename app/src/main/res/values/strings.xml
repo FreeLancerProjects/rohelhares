@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Roh Elhares</string>
-    <string name="map_api_key">AIzaSyDa7vtwUx4fiAqhKntADNhywJyfbx118OI</string>
+    <string name="map_api_key">AIzaSyDWL4T8WERSHrXQ464jk8pKQf_0WLiDbgE</string>
     <string name="go">Go Only</string>
     <string name="returns">Return Only</string>
     <string name="go_and_return">Go and Return</string>

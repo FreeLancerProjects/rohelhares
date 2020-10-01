@@ -170,7 +170,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private int position;
     private AlertDialog dialog;
     private List<PolygonOptions> polygonOptionsList;
-    private boolean zoomL=true;
+    private boolean zoomL = true;
+    private boolean timerShow = true;
     private List<Marker> markers;
 
     @Override
@@ -262,45 +263,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 go.clear();
                 markerlist.clear();
                 my_database.myDoe().deleteallorder();
-                //updateDataMapUI();
                 allPolygon.clear();
                 mMap.clear();
                 marker = null;
-                //addMarker(new LatLng(lat, lng));
             }
         });
         my_database = Room.databaseBuilder(getApplicationContext(), My_Database.class, "geodb").allowMainThreadQueries().build();
-//        addgeo = this.my_database.myDoe().getgeo();
-//        for (int i = 0; i < addgeo.size(); i++) {
-//            content.add(addgeo.get(
-//                    i).getContent());
-//                    i).getContent());
-//            title.add(addgeo.get(i).getTitle());
-//            times.add(addgeo.get(i).getTime());
-//            hiddens.add(addgeo.get(i).getShow());
-//            hiddenstimer.add(addgeo.get(i).getHidden());
-//            from.add(addgeo.get(i).getFrom());
-//            go.add(addgeo.get(i).getGo());
-//            to.add(addgeo.get(i).getTo());
-//            opens.add(addgeo.get(i).getOpen());
-//            countsnum.add(addgeo.get(i).getCount());
-//            File file;
-//            if (addgeo.get(i).getSound() != null) {
-//                file = new File(addgeo.get(i).getSound());
-//            } else {
-//                file = null;
-//            }
-//            Log.e("llll", addgeo.get(i).getCount() + "" + addgeo.get(i).getTime() + from.get(i));
-//            files.add(file);
-//
-//            ArrayList<Double> listfogeo = new ArrayList<>();
-//            listfogeo.add(addgeo.get(i).getFrom_lat());
-//            listfogeo.add(addgeo.get(i).getFrom_lng());
-//            listfogeo.add(addgeo.get(i).getTo_lat());
-//            listfogeo.add(addgeo.get(i).getTo_lng());
-//            markerlist.put(i, listfogeo);
-//
-//        }
         checkWritePermission();
 
     }
@@ -317,86 +285,43 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         if (googleMap != null) {
             mMap = googleMap;
+            mMap.setIndoorEnabled(false);
+            mMap.setBuildingsEnabled(false);
             mMap.setTrafficEnabled(true);
-            mMap.setBuildingsEnabled(true);
-            mMap.setIndoorEnabled(true);
+            mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+
             zoom = mMap.getMaxZoomLevel();
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
                 return;
             }
-            // mMap.setMyLocationEnabled(true);
-            // mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), zoom));
-//            if (count == 0) {
-//                if (markerlist.size() > 0) {
-//                    updateDataMapUI();
-//                }
-//            }
+
             mMap.setOnMapClickListener(latLng -> {
-                Log.e("dd","11");
+                Log.e("dd", "11");
 
                 if (canDraw) {
-                    Log.e("dd","22");
+                    Log.e("dd", "22");
 
                     if (polygonList.size() >= 4) {
                         // allPolygon.add(polygonList);
                         polygonList = new ArrayList<>();
-                        markerlist.clear();;
+                        markerlist.clear();
+
                     }
                     polygonList.add(latLng);
                     Marker marker = mMap.addMarker(new MarkerOptions().position(latLng).title(""));
                     markers.add(marker);
 
                     if (polygonList.size() == 4) {
-                        Log.e("dd","33");
+                        Log.e("dd", "33");
 
                         allPolygon.add(polygonList);
 
                         //drawPolygon();
-                        CreateDialogAlert(this,polygonList);
+                        CreateDialogMesaage(this, polygonList);
                         canDraw = false;
 
                     }
                 }
-
-
-/*
-                Log.e(";;;;", count + "");
-                if (count > 0) {
-                    count -= 1;
-                    List<Double> list;
-                    if (pos != -1 && markerlist.get(pos) != null) {
-                        list = markerlist.get(pos);
-                        Log.e(";llfllfll", ";l;l;;");
-                    } else {
-                        list = new ArrayList<>();
-                    }
-                    list.add(latLng.latitude);
-                    list.add(latLng.longitude);
-                    if (pos != -1 && markerlist.get(pos) != null) {
-                        markerlist.remove(pos);
-                        markerlist.put(pos, list);
-                    } else {
-                        markerlist.put(markerlist.size(), list);
-                    }
-                    if (count == 0) {
-                        aceept = false;
-                        pos = -1;
-                        updateDataMapUI();
-
-                        CreateDialogAlert(this);
-                    } else {
-                        pos = markerlist.size() - 1;
-                        Log.e(";lldl", pos + "");
-                    }
-                }
-*/
 
             });
         }
@@ -404,6 +329,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void drawPolygon(List<LatLng> polygonList) {
+        timerShow=true;
         PolygonOptions polygonOptions = new PolygonOptions();
         polygonOptions.addAll(polygonList);
 
@@ -416,41 +342,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-    private void addMarker(LatLng latLng) {
-        if (marker == null) {
-            marker = mMap.addMarker(new MarkerOptions().position(latLng));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16.5f));
-        } else {
-            marker.setPosition(latLng);
-        }
-    }
-
 
     @SuppressLint("MissingPermission")
     @Override
     public void onLocationChanged(Location location) {
         lat = location.getLatitude();
         lng = location.getLongitude();
+        if (zoomL) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 16.5f));
 
-        // addMarker(new LatLng(lat,lng));
-if (zoomL){
-    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 16.5f));
-
-}
-zoomL=false;
+        }
+        zoomL = false;
 
         mMap.setMyLocationEnabled(true);
 
-        ///    startTimer(1,0);
-
-
-        //  Toast.makeText(MapActivity.this,lists.get(0).size()+"",Toast.LENGTH_LONG).show();
-
-        //     Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
-        if (isInsideArea(new LatLng(lat, lng)) && times.size() > 0&&times.size()==allPolygon.size()) {
+         if (isInsideArea(new LatLng(lat, lng)) && times.size() > 0 && times.size() == allPolygon.size()) {
             Log.e("llllnnbbb", lat + "");
 
-            //Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
             SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
             Date date = new Date(System.currentTimeMillis());
             try {
@@ -462,91 +370,54 @@ zoomL=false;
             try {
                 date1 = formatter.parse(from.get(position));
             } catch (ParseException e) {
-             //   e.printStackTrace();
+                //   e.printStackTrace();
             }
             Date date2 = null;
             try {
                 date2 = formatter.parse(to.get(position));
             } catch (ParseException e) {
-               // e.printStackTrace();
+                // e.printStackTrace();
             }
-Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+"  "+date2.getTime());
-            if (opens.get(position) == 1 && date.getTime() >= date1.getTime() && date.getTime() < date2.getTime()) {
-
+           /* if (files.get(position) != null && files.get(position).getPath() != null && !files.get(position).getPath().equals(null)) {
+                initAudio(files.get(position).getPath());
+                Log.e("8888",files.get(position).getPath());
+            }*/
+            Log.e("flflfllsss", date.getTime() + "   " + date1.getTime() + "  " + from.get(position) + "  " + date2.getTime());
+            if (opens.get(position) == 1 && date.getTime() >= date1.getTime() && date.getTime() < date2.getTime()&&timerShow) {
 
                 String sound_Path = "android.resource://" + getPackageName() + "/" + R.raw.not;
                 //    Toast.makeText(MapActivity.this, "" + doubleList.get(j) + " " + doubleList.get(j + 1) + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
+
+                    Log.e("7777",files.get(position).getPath());
+
                 for (int l = 0; l < countsnum.get(position); l++) {
                     if (files.get(position) != null && files.get(position).getPath() != null && !files.get(position).getPath().equals(null)) {
                         initAudio(files.get(position).getPath());
+                        Log.e("8888",files.get(position).getPath());
                     }
-                    if (!title.get(position).equals(null) && title.get(position) != null && !title.get(position).isEmpty()) {
+                    try {
+                        Log.e("mmmm", title.get(position));
+
+                    } catch (Exception e) {
+
+                    }
+                    if (!title.get(position).equals("") && !title.get(position).equals(null) && title.get(position) != null && !title.get(position).isEmpty()) {
+                        Log.e("mmmm", title.get(position));
+
                         CreateDialogshowMesaage(this, title.get(position), content.get(position));
-//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//
-//                            String CHANNEL_ID = "my_channel_02";
-//                            CharSequence CHANNEL_NAME = "my_channel_name";
-//                            int IMPORTANCE = NotificationManager.IMPORTANCE_HIGH;
-//
-//                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-//                            final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
-//                            channel.setShowBadge(true);
-//                            channel.setSound(Uri.parse(sound_Path), new AudioAttributes.Builder()
-//                                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-//                                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
-//                                    .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
-//                                    .build()
-//                            );
-//
-//                            builder.setChannelId(CHANNEL_ID);
-//                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-//                            builder.setSmallIcon(R.drawable.ic_notification);
-//
-//
-//                            builder.setContentTitle(title.get(position));
-//
-//
-//                            builder.setContentText(content.get(position));
-//
-//
-//                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-//
-//                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
-//                            builder.setLargeIcon(bitmap);
-//                            manager.createNotificationChannel(channel);
-//                            manager.notify(new Random().nextInt(200), builder.build());
-//                        }
-//                        else {
-//                            //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
-//
-//                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-//
-//                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-//                            builder.setSmallIcon(R.drawable.ic_notification);
-//
-//                            builder.setContentTitle(title.get(position));
-//
-//
-//                            builder.setContentText(content.get(position));
-//
-//
-//                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-//
-//                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
-//                            builder.setLargeIcon(bitmap);
-//                            manager.notify(new Random().nextInt(200), builder.build());
-//
-//                        }
+
                     }
                 }
 
-            }
-            else if(opens.get(position)!=1){
-                if(times.get(position)>0) {
-                    startTimer(times.get(position), position);
-                }
-                else {
-                    CreateDialogshowMesaage(MapActivity.this,title.get(position),content.get(position));
+            } else if (opens.get(position) != 1&&timerShow) {
+                if (times.get(position) > 0) {
+                        startTimer(times.get(position), position);
+
+                } else {
+                    if (!title.get(position).equals("") && !title.get(position).equals(null) && title.get(position) != null && !title.get(position).isEmpty()) {
+
+                        CreateDialogshowMesaage(MapActivity.this, title.get(position), content.get(position));
+                    }
                 }
             }
 
@@ -555,15 +426,6 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
 
 
     }
-
-//    void getLocation() {
-//        try {
-//            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-//            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, this);
-//        } catch (SecurityException e) {
-//            Log.e(":slslslsl", e.getLocalizedMessage());
-//        }
-//    }
 
     public void back() {
         finish();
@@ -616,16 +478,22 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
     }
 
     private void startTimer(int time, int i) {
+        timerShow=false;
 
         timer = new CountDownTimer(time * 1000, 1000) {
             @Override
             public void onTick(long l) {
                 SimpleDateFormat format = new SimpleDateFormat("ss", Locale.ENGLISH);
                 String time = format.format(new Date(l));
-                if (hiddenstimer.get(i) == 0) {
-                    binding.fr.setVisibility(View.VISIBLE);
-                    binding.tv1.setText(time);
+                try {
+                    if (hiddenstimer.get(i) == 0) {
+                        binding.fr.setVisibility(View.VISIBLE);
+                        binding.tv1.setText(time);
+                    }
+                }catch (Exception e){
+
                 }
+
                 //  Toast.makeText(MapActivity.this,time,Toast.LENGTH_LONG).show();
             }
 
@@ -642,70 +510,16 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
                             initAudio(files.get(position).getPath());
                             //  CreateDialogDisplay(MapActivity.this, files.get(i).getPath());
                         }
-                        if (!title.get(position).equals(null) && title.get(position) != null && !title.get(position).isEmpty()) {
+                        if (!title.get(position).equals("") && !title.get(position).equals(null) && title.get(position) != null && !title.get(position).isEmpty()) {
                             CreateDialogshowMesaage(MapActivity.this, title.get(i), content.get(i));
                         }
-//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//
-//                            String CHANNEL_ID = "my_channel_02";
-//                            CharSequence CHANNEL_NAME = "my_channel_name";
-//                            int IMPORTANCE = NotificationManager.IMPORTANCE_HIGH;
-//
-//                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(MapActivity.this);
-//                            final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
-//                            channel.setShowBadge(true);
-//                            channel.setSound(Uri.parse(sound_Path), new AudioAttributes.Builder()
-//                                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-//                                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
-//                                    .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
-//                                    .build()
-//                            );
-//
-//                            builder.setChannelId(CHANNEL_ID);
-//                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-//                            builder.setSmallIcon(R.drawable.ic_notification);
-//
-//
-//                            builder.setContentTitle(title.get(i));
-//
-//
-//                            builder.setContentText(content.get(i));
-//
-//
-//                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-//
-//                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
-//                            builder.setLargeIcon(bitmap);
-//                            manager.createNotificationChannel(channel);
-//                            manager.notify(new Random().nextInt(200), builder.build());
-//                        }
-//                        else {
-//                            //  Toast.makeText(MapActivity.this, ";f;;f;f;", Toast.LENGTH_LONG).show();
-//
-//                            final NotificationCompat.Builder builder = new NotificationCompat.Builder(MapActivity.this);
-//
-//                            builder.setSound(Uri.parse(sound_Path), AudioManager.STREAM_NOTIFICATION);
-//                            builder.setSmallIcon(R.drawable.ic_notification);
-//
-//                            builder.setContentTitle(title.get(i));
-//
-//
-//                            builder.setContentText(content.get(i));
-//
-//
-//                            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-//
-//                            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification);
-//                            builder.setLargeIcon(bitmap);
-//                            manager.notify(new Random().nextInt(200), builder.build());
-//
-//                        }
                     }
                 }
             }
         };
 
         timer.start();
+
     }
 
     @Override
@@ -722,22 +536,6 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
 
     }
 
-
-    //    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//
-//        if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
-//
-//            getLocation();
-//        }m
-//
-//    }
-//
-//    @Override
-//    public void onStatusChanged(String provider, int status, Bundle extras) {
-//
-//    }
     private void CheckPermission() {
         if (ActivityCompat.checkSelfPermission(this, fineLocPerm) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{fineLocPerm}, loc_req);
@@ -826,53 +624,17 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
         Log.e("ldlldssss", hidden + "");
         IconGenerator iconGenerator = new IconGenerator(this);
         iconGenerator.setContentPadding(15, 15, 15, 15);
-        // iconGenerator.setTextAppearance(R.style.iconGenText);
-        // iconGenerator.setBackground(ContextCompat.getDrawable(activity, android:R.drawable.ic_map));
-        // iconGenerator.setColor(R.color.black);
-
         Marker marker;
         Marker marker1;
         try {
             marker = mMap.addMarker(new MarkerOptions().position(new LatLng(branchs.get(0), branchs.get(1))).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
             marker1 = mMap.addMarker(new MarkerOptions().position(new LatLng(branchs.get(2), branchs.get(3))).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
 
-            // getDirection(branchs.get(0) + "", branchs.get(1) + "", branchs.get(2) + "", branchs.get(3) + "");
             drawRoute(branchs.get(0), branchs.get(1), branchs.get(2), branchs.get(3), hidden);
         } catch (Exception e) {
 
         }
 
-
-    }
-
-    private void getDirection(String client_lat, String client_lng, String driver_lat, String driver_lng) {
-        Log.e("sssss", client_lat + " " + client_lng + " " + driver_lat + " " + driver_lng);
-
-        String origin = "", dest = "";
-        origin = client_lat + "," + client_lng;
-        dest = driver_lat + "," + driver_lng;
-        Log.e("ldlldl", origin + " " + dest);
-        Api.getService("https://maps.googleapis.com/maps/api/")
-                .getDirection(origin, dest, "rail", getString(R.string.map_api_key))
-                .enqueue(new Callback<PlaceDirectionModel>() {
-                    @Override
-                    public void onResponse(Call<PlaceDirectionModel> call, Response<PlaceDirectionModel> response) {
-                        if (response.body() != null && response.body().getRoutes().size() > 0) {
-                            Log.e("ldldkdkkd", response.body().getRoutes().get(0).getOverview_polyline().getPoints());
-                            //  drawRoute(PolyUtil.decode(response.body().getRoutes().get(0).getOverview_polyline().getPoints()));
-
-                        } else {
-                            Log.e("sssss", "ldlldldldl" + "");
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<PlaceDirectionModel> call, Throwable t) {
-                        try {
-                        } catch (Exception e) {
-                        }
-                    }
-                });
 
     }
 
@@ -889,52 +651,6 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
             Polyline polyline = mMap.addPolyline(polyLineOptions);
             polyline.setGeodesic(true);
         }
-
-//        List<Double> doubleList = new ArrayList<>();
-//        // Log.e("lflfll", from_latitude + " " + to_latitude + " " + from_longitude + " " + to_longitude);
-//        if (from_latitude < to_latitude && from_longitude < to_longitude) {
-//            for (double i = from_latitude; i < to_latitude; i += .01) {
-//                for (double j = from_longitude; j < to_longitude; j += .01) {
-//                    doubleList.add(i);
-//                    doubleList.add(j);
-//                    //    Log.e("lsllsl", i + " " + j);
-//                }
-//            }
-//        } else if (to_latitude < from_latitude && to_longitude < from_longitude) {
-//            for (double i = to_latitude; i < from_latitude; i += .01) {
-//                for (double j = to_longitude; j < from_longitude; j += .01) {
-//                    doubleList.add(i);
-//                    doubleList.add(j);
-//                    //   Log.e("lsllsl", i + " " + j);
-//                }
-//            }
-//        } else if (to_latitude < from_latitude && from_latitude < to_latitude) {
-//            for (double i = to_latitude; i < from_latitude; i += .01) {
-//                for (double j = from_longitude; j < to_longitude; j += .01) {
-//                    doubleList.add(i);
-//                    doubleList.add(j);
-//                    // Log.e("lsllsl", i + " " + j);
-//                }
-//            }
-//        } else {
-//            for (double i = from_latitude; i < to_latitude; i += .01) {
-//                for (double j = to_longitude; j < from_longitude; j += .01) {
-//                    doubleList.add(i);
-//                    doubleList.add(j);
-//                    // Log.e("lsllsl", i + " " + j);
-//                }
-//            }
-//        }
-//
-//        //Log.e("lsllsl", fineLocPerm + " " + fineLocPerm);
-//
-////        doubleList.add(from_latitude);
-////        doubleList.add(from_longitude);
-////        doubleList.add(to_latitude);
-////        doubleList.add(to_longitude);
-//
-//        lists.add(doubleList);
-
     }
 
     private boolean isInsideArea(LatLng latLng) {
@@ -1020,7 +736,7 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
         binding.btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                CreateDialogMesaage(context,polygonList);
+                CreateDialogMesaage(context, polygonList);
                 dialog.dismiss();
 
             }
@@ -1077,14 +793,14 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
                 }
             }
         });
-       /* binding.rdhiddeen.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        binding.rdthiddeen.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     hidden2 = 1;
                 }
             }
-        });*/
+        });
         binding.rdseconed.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -1153,32 +869,31 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
             public void onClick(View view) {
                 if (binding.rdhiddeen.isChecked()) {
 
-                    for (Marker marker:markers){
+                    for (Marker marker : markers) {
                         marker.remove();
                     }
 
                    /* hidden = 1;
                     polygonOptionsList.get(polygonOptionsList.size() - 1).visible(false);
 */
-                }else {
+                } else {
                     drawPolygon(polygonList);
-                   // hidden=0;
+                    // hidden=0;
                 }
                 title.add(binding.edtName.getText().toString() + "");
                 content.add(binding.edtContent.getText().toString() + "");
                 hiddens.add(hidden);
                 hiddenstimer.add(hidden2);
-                if (files.size()<hiddens.size()){
+                if (files.size() < hiddens.size()) {
                     files.add(null);
                 }
-                if(binding.rdhour.isChecked()){
-                    open=1;
-                }
-                else {
-                    open=0;
+                if (binding.rdhour.isChecked()) {
+                    open = 1;
+                } else {
+                    open = 0;
                 }
                 opens.add(open);
-                if (hidden == 1) {
+                if (hidden ==  1) {
 
                 }
                 go.add(goes);
@@ -1303,7 +1018,8 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
 
 
             return true;
-        });
+        }
+        );
         binding.cardaudioselect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -1534,23 +1250,6 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
 
                 }
             }
-//            binding.recordDuration.setText(getDuration(mediaPlayer.getDuration()));
-//            binding.cardViewaudio.setVisibility(View.VISIBLE);
-
-//            mediaPlayer.setOnPreparedListener(mediaPlayer -> {
-//                binding.cardViewaudio.setVisibility(View.VISIBLE);
-//                binding.seekBar.setMax(mediaPlayer.getDuration());
-//                binding.imagePlay.setImageResource(R.drawable.ic_play);
-//            });
-
-//            mediaPlayer.setOnCompletionListener(mediaPlayer -> {
-//
-//                binding.recordDuration.setText(getDuration(mediaPlayer.getDuration()));
-//                binding.imagePlay.setImageResource(R.drawable.ic_play);
-//                binding.seekBar.setProgress(0);
-//                handler.removeCallbacks(runnable);
-//
-//            });
 
         } catch (Exception e) {
             Log.e("eeeex", e.getLocalizedMessage() + e.toString());
@@ -1559,7 +1258,6 @@ Log.e("flflfllsss",date.getTime()+"   "+date1.getTime()+"  "+from.get(position)+
             if (handler != null && runnable != null) {
                 handler.removeCallbacks(runnable);
             }
-            //    binding.cardViewaudio.setVisibility(View.GONE);
 
         }
     }
